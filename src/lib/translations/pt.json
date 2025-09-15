@@ -1,0 +1,76 @@
+{
+  "hero": {
+    "title": "Crie meditações personalizadas com IA em segundos",
+    "subtitle": "Transforme seus desejos em meditações feitas sob medida",
+    "description": "Selecione a duração, as frequências e o estilo, e deixe a IA transformar cada sessão em uma experiência sonora que o guia para a melhor versão de si mesmo.",
+    "button": "Comece Grátis",
+    "compliance": "SOC-2, GDPR e mais"
+  },
+  "header": {
+    "tools": "Ferramentas",
+    "resources": "Recursos",
+    "pricing": "Preços",
+    "signIn": "Entrar",
+    "startFree": "Comece Grátis"
+  },
+  "toolsMenu": {
+    "users": {
+      "title": "Usuários",
+      "description": "Meditação personalizada para usuários particulares."
+    },
+    "companies": {
+      "title": "Empresas",
+      "description": "Meditações personalizadas para empresas."
+    },
+    "creators": {
+      "title": "Criadores de conteúdo",
+      "description": "Meditações personalizadas para criadores de conteúdo."
+    }
+  },
+  "resourcesMenu": {
+    "support": "Suporte",
+    "aiChat": "Chat de IA"
+  },
+  "supportPage": {
+    "description": "Contato e suporte oficial do Meditation.AI.",
+    "subtitle": "Estamos aqui para ajudar com qualquer dúvida ou problema.",
+    "cta": "Resposta em até 24h",
+    "kicker": "Suporte oficial",
+    "bubble": "Como podemos ajudá-lo hoje?",
+    "form": {
+      "name_label": "Nome",
+      "name_placeholder": "Seu nome",
+      "email_label": "E-mail",
+      "email_placeholder": "email@exemplo.com",
+      "subject_label": "Assunto",
+      "subject_placeholder": "Diga-nos o motivo",
+      "message_label": "Mensagem",
+      "message_placeholder": "Descreva sua solicitação em detalhes",
+      "submit": "Enviar",
+      "privacy_hint": "Ao enviar você aceita nossa",
+      "privacy_link": "Política de privacidade"
+    }
+  },
+  "authPage": {
+    "pageTitle": "Aceda à sua conta",
+    "pageDescription": "Faça login no Meditation.AI para acessar suas meditações personalizadas.",
+    "continueWithGoogle": "Continuar com Google",
+    "continueWithMicrosoft": "Continuar com Microsoft",
+    "continueWithApple": "Continuar com Apple",
+    "continueWithSSO": "Continuar com SSO",
+    "or": "ou",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Senha",
+    "emailRequiredError": "O email é obrigatório.",
+    "emailInvalidError": "Por favor, insira um e-mail válido.",
+    "passwordRequiredError": "A senha é obrigatória.",
+    "forgotPassword": "Esqueceu a senha?",
+    "signInButton": "Entrar",
+    "legalText": {
+      "prefix": "Ao continuar, você concorda com os",
+      "terms": "Termos",
+      "and": "e a",
+      "privacy": "Política de Privacidade"
+    }
+  }
+}

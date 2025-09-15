@@ -1,0 +1,76 @@
+{
+  "hero": {
+    "title": "Crea meditaciones personalizadas con IA en segundos",
+    "subtitle": "Transforma tus deseos en meditaciones diseñadas a tu medida",
+    "description": "Selecciona la duración, las frecuencias y el estilo, y permite que la IA convierta cada sesión en una experiencia sonora que te guía hacia la mejor versión de ti mismo.",
+    "button": "Comienza Gratis",
+    "compliance": "SOC-2, GDPR y más"
+  },
+  "header": {
+    "tools": "Herramientas",
+    "resources": "Recursos",
+    "pricing": "Precios",
+    "signIn": "Iniciar sesión",
+    "startFree": "Comienza Gratis"
+  },
+  "toolsMenu": {
+    "users": {
+      "title": "Usuarios",
+      "description": "Meditación personalizada para usuarios particulares."
+    },
+    "companies": {
+      "title": "Empresas",
+      "description": "Meditaciones personalizadas para empresas."
+    },
+    "creators": {
+      "title": "Creadores de contenido",
+      "description": "Meditaciones personalizadas para creadores de contenido."
+    }
+  },
+  "resourcesMenu": {
+    "support": "Soporte",
+    "aiChat": "Chat de IA"
+  },
+  "supportPage": {
+    "description": "Contacto y soporte oficial de Meditation.AI.",
+    "subtitle": "Estamos aquí para ayudarte con cualquier duda o incidencia.",
+    "cta": "Respuesta en 24h",
+    "kicker": "Soporte oficial",
+    "bubble": "¿En qué podemos ayudarte hoy?",
+    "form": {
+      "name_label": "Nombre",
+      "name_placeholder": "Tu nombre",
+      "email_label": "Correo electrónico",
+      "email_placeholder": "email@ejemplo.com",
+      "subject_label": "Asunto",
+      "subject_placeholder": "Dinos el motivo",
+      "message_label": "Mensaje",
+      "message_placeholder": "Cuéntanos tu consulta con detalle",
+      "submit": "Enviar",
+      "privacy_hint": "Al enviar aceptas nuestra",
+      "privacy_link": "Política de privacidad"
+    }
+  },
+  "authPage": {
+    "pageTitle": "Accede a tu cuenta",
+    "pageDescription": "Inicia sesión en Meditation.AI para acceder a tus meditaciones personalizadas.",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithMicrosoft": "Continuar con Microsoft",
+    "continueWithApple": "Continuar con Apple",
+    "continueWithSSO": "Continuar con SSO",
+    "or": "o",
+    "emailPlaceholder": "Correo electrónico",
+    "passwordPlaceholder": "Contraseña",
+    "emailRequiredError": "El correo electrónico es obligatorio.",
+    "emailInvalidError": "Por favor, introduce un correo electrónico válido.",
+    "passwordRequiredError": "La contraseña es obligatoria.",
+    "forgotPassword": "¿Olvidaste la contraseña?",
+    "signInButton": "Iniciar sesión",
+    "legalText": {
+      "prefix": "Al continuar, aceptas los",
+      "terms": "Términos",
+      "and": "y la",
+      "privacy": "Política de privacidad"
+    }
+  }
+}
