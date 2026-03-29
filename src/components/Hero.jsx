@@ -11,6 +11,7 @@ const Hero = () => {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } }
   };
+
   const item = {
     hidden: { y: 14, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 16 } }
@@ -60,7 +61,11 @@ const Hero = () => {
               >
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-[18px] w-[18px] text-yellow-400" fill="currentColor" />
+                    <Star
+                      key={i}
+                      className="h-[18px] w-[18px] text-yellow-400"
+                      fill="currentColor"
+                    />
                   ))}
                 </div>
                 <p className="text-sm text-slate-500">
@@ -70,13 +75,11 @@ const Hero = () => {
             </div>
 
             <motion.div className="relative" variants={item}>
-              <div className="relative mx-auto lg:mx-0 max-w-[480px] rounded-2xl bg-white p-2.5 md:p-3.5 shadow-xl ring-1 ring-slate-200/60 aspect-[16/10] overflow-hidden">
-                <img
-                  className="h-full w-full object-cover rounded-xl"
-                  alt="Imagen del hero"
-                  src="/Imagen Hero.png"
-                />
-              </div>
+              <img
+                className="w-full max-w-[600px] lg:max-w-[700px] mx-auto lg:mx-0"
+                alt="Imagen del hero"
+                src="/Imagen Hero.png"
+              />
             </motion.div>
           </motion.div>
         </div>
