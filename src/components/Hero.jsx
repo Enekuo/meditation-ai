@@ -71,7 +71,11 @@ const Hero = () => {
 
             <motion.div className="relative" variants={item}>
               <div className="relative mx-auto lg:mx-0 max-w-[480px] rounded-2xl bg-white p-2.5 md:p-3.5 shadow-xl ring-1 ring-slate-200/60 aspect-[16/10] overflow-hidden">
-                <img className="h-full w-full object-cover rounded-xl" alt="Ilustración abstracta de IA y meditación con formas 3D y ondas de sonido" src="https://horizons-cdn.hostinger.com/b165068b-ef99-4afb-83a7-dadb10c1561e/ab4b8131a7a409d215bee50933bcba89.png" />
+                <img
+                  className="h-full w-full object-cover rounded-xl"
+                  alt="Imagen del hero"
+                  src="/Imagen Hero.png"
+                />
               </div>
             </motion.div>
           </motion.div>
