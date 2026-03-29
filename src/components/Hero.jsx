@@ -32,14 +32,14 @@ const Hero = () => {
                 className="text-slate-900 tracking-tight font-extrabold leading-[1.06] text-4xl md:text-5xl lg:text-[44px] max-w-xl"
                 variants={item}
               >
-                {t('hero.title')}
+                Controla tu cartera de inversión desde un solo lugar
               </motion.h1>
 
               <motion.p
                 className="mt-4 text-slate-600 text-base md:text-lg leading-relaxed max-w-md"
                 variants={item}
               >
-                {t('hero.subtitle')}: {t('hero.description')}
+                Visualiza el rendimiento de tus inversiones con métricas claras y gráficas interactivas, monitorea tus activos y recibe resúmenes detallados fácilmente.
               </motion.p>
 
               <motion.div
