@@ -10,6 +10,7 @@ import CreatorsPage from '@/pages/CreatorsPage';
 import AuthPage from '@/pages/AuthPage';
 import SupportPage from '@/pages/SupportPage';
 import DashboardPage from '@/pages/FreeAccount/DashboardPage';
+import FreeLayout from '@/components/FreeLayout';
 
 function App() {
     const location = useLocation();
@@ -41,7 +42,10 @@ function App() {
                         <Route path="/empresas" element={<CompaniesPage />} />
                         <Route path="/creadores" element={<CreatorsPage />} />
                         <Route path="/soporte" element={<SupportPage />} />
-                        <Route path="/dashboard" element={<DashboardPage />} />
+
+                        <Route element={<FreeLayout />}>
+                            <Route path="/dashboard" element={<DashboardPage />} />
+                        </Route>
                     </Routes>
                 </main>
                 <Toaster />
