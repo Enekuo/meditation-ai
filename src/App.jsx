@@ -9,6 +9,7 @@ import CompaniesPage from '@/pages/CompaniesPage';
 import CreatorsPage from '@/pages/CreatorsPage';
 import AuthPage from '@/pages/AuthPage';
 import SupportPage from '@/pages/SupportPage';
+import DashboardPage from '@/pages/FreeAccount/DashboardPage';
 
 function App() {
     const location = useLocation();
@@ -34,6 +35,8 @@ function App() {
                         <Route path="/empresas" element={<CompaniesPage />} />
                         <Route path="/creadores" element={<CreatorsPage />} />
                         <Route path="/soporte" element={<SupportPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+
                     </Routes>
                 </main>
                 <Toaster />
