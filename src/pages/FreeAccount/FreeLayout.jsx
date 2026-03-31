@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Lightbulb,
-  CircleHelp,
+  HelpCircle,
   Settings,
   ChevronsLeft,
   Globe,
@@ -74,7 +74,7 @@ const FreeLayout = () => {
               </button>
 
               <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-[15px] font-medium text-left">
-                <CircleHelp size={18} />
+                <HelpCircle size={18} />
                 <span>Ayuda</span>
               </button>
 
