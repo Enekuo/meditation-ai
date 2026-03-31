@@ -13,18 +13,24 @@ import DashboardPage from '@/pages/FreeAccount/DashboardPage';
 
 function App() {
     const location = useLocation();
-    const showHeader = location.pathname !== '/iniciar-sesion';
+    const showHeader = location.pathname !== '/iniciar-sesion' && location.pathname !== '/dashboard';
 
     return (
         <>
             <Helmet>
-                <title>Meditation.AI - Tu Compañero de Meditación con IA</title>
-                <meta name="description" content="Descubre la meditación personalizada con inteligencia artificial. Meditation.AI te ayuda a encontrar la paz interior con sesiones adaptadas a tus necesidades." />
+                <title>Portfolio Controller - Controla tu cartera de inversión</title>
+                <meta
+                    name="description"
+                    content="Controla tu cartera de inversión desde un solo lugar con métricas claras, gráficos interactivos y una visión completa de tus activos."
+                />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@700&display=swap" rel="stylesheet" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@700&display=swap"
+                    rel="stylesheet"
+                />
             </Helmet>
-            
+
             <div className="bg-white text-slate-900">
                 {showHeader && <Header />}
                 <main>
@@ -36,7 +42,6 @@ function App() {
                         <Route path="/creadores" element={<CreatorsPage />} />
                         <Route path="/soporte" element={<SupportPage />} />
                         <Route path="/dashboard" element={<DashboardPage />} />
-
                     </Routes>
                 </main>
                 <Toaster />
