@@ -10,7 +10,7 @@ import CreatorsPage from '@/pages/CreatorsPage';
 import AuthPage from '@/pages/AuthPage';
 import SupportPage from '@/pages/SupportPage';
 import DashboardPage from '@/pages/FreeAccount/DashboardPage';
-import FreeLayout from '@/components/FreeLayout';
+import FreeLayout from '@/pages/FreeAccount/FreeLayout';
 
 function App() {
     const location = useLocation();
