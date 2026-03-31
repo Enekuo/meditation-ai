@@ -25,7 +25,6 @@ const languages = [
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
     const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false);
     const { toast } = useToast();
     const { language, setLanguage, t } = useTranslation();
@@ -59,28 +58,8 @@ const Header = () => {
     };
 
     const navItems = [
+        { name: 'Por qué PFLR', action: () => handleFeatureClick() },
         { name: t('header.pricing'), action: () => handleFeatureClick() },
-    ];
-
-    const tools = [
-      {
-        emoji: '🧘‍♂️',
-        title: t('toolsMenu.users.title'),
-        description: t('toolsMenu.users.description'),
-        link: '/usuarios',
-      },
-      {
-        emoji: '💼',
-        title: t('toolsMenu.companies.title'),
-        description: t('toolsMenu.companies.description'),
-        link: '/empresas',
-      },
-      {
-        emoji: '💻',
-        title: t('toolsMenu.creators.title'),
-        description: t('toolsMenu.creators.description'),
-        link: '/creadores',
-      },
     ];
 
     const resources = [
@@ -97,29 +76,6 @@ const Header = () => {
             action: handleFeatureClick
         }
     ];
-
-    const ToolsDropdownContent = () => (
-      <div className="w-full md:w-[340px] p-2 space-y-2">
-        {tools.map((tool) => (
-          <Link
-            key={tool.title}
-            to={tool.link}
-            className="group flex items-start p-2 rounded-lg cursor-pointer hover:bg-slate-50 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-colors"
-            onClick={() => {
-              handleFeatureClick();
-              if (isMobileMenuOpen) setIsMobileMenuOpen(false);
-              setIsToolsMenuOpen(false);
-            }}
-          >
-            <div className="text-xl mr-3 mt-0.5">{tool.emoji}</div>
-            <div>
-              <p className="font-semibold text-sm text-slate-800">{tool.title}</p>
-              <p className="text-xs text-slate-500 leading-snug">{tool.description}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-    );
     
     const ResourcesDropdownContent = ({ inMobileMenu = false }) => (
         <div className={`p-1 ${inMobileMenu ? 'w-full' : 'w-48'}`}>
@@ -162,29 +118,19 @@ const Header = () => {
                 
                 <div className="flex items-center">
                     <Link to="/" style={{ fontFamily: "'Quicksand', sans-serif" }} className="text-xl font-bold text-slate-900 tracking-tight mr-8">
-                        Meditation.AI
+                        Portfolio Controller
                     </Link>
+
                     <nav className="hidden lg:flex items-center gap-1">
-                        <DropdownMenu open={isToolsMenuOpen} onOpenChange={setIsToolsMenuOpen}>
-                            <DropdownMenuTrigger asChild>
-                                <button 
-                                  onPointerEnter={() => setIsToolsMenuOpen(true)}
-                                  className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                                >
-                                    {t('header.tools')}
-                                    <ChevronDown size={16} className={`transition-transform duration-200 ${isToolsMenuOpen ? 'rotate-180' : ''}`} />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent 
-                              onPointerLeave={() => setIsToolsMenuOpen(false)}
-                              className="bg-white rounded-2xl shadow-lg border border-slate-200 mt-2" 
-                              align="start"
-                              sideOffset={8}
+                        {navItems.slice(0, 1).map(item => (
+                            <button
+                                key={item.name}
+                                onClick={item.action}
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md"
                             >
-                              <DropdownMenuArrow className="fill-white stroke-slate-200" width={16} height={8} />
-                              <ToolsDropdownContent />
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                {item.name}
+                            </button>
+                        ))}
 
                         <DropdownMenu open={isResourcesMenuOpen} onOpenChange={setIsResourcesMenuOpen}>
                             <DropdownMenuTrigger asChild>
@@ -207,8 +153,12 @@ const Header = () => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {navItems.map(item => (
-                            <button key={item.name} onClick={item.action} className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md">
+                        {navItems.slice(1).map(item => (
+                            <button
+                                key={item.name}
+                                onClick={item.action}
+                                className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md"
+                            >
                                 {item.name}
                             </button>
                         ))}
@@ -265,27 +215,35 @@ const Header = () => {
                     >
                         <div className="flex justify-between items-center h-16 px-4 border-b border-slate-200">
                             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} style={{ fontFamily: "'Quicksand', sans-serif" }} className="text-lg font-bold text-slate-900 tracking-tight">
-                                Meditation.AI
+                                Portfolio Controller
                             </Link>
                             <button onClick={() => setIsMobileMenuOpen(false)}>
                                 <X size={24} className="text-slate-800" />
                             </button>
                         </div>
+
                         <div className="p-4 flex flex-col h-[calc(100%-64px)]">
                             <div className="flex flex-col gap-1">
-                                <p className="px-2 text-sm font-semibold text-slate-500 mt-2 mb-1">{t('header.tools')}</p>
-                                <ToolsDropdownContent />
+                                <button
+                                    onClick={handleFeatureClick}
+                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 transition-colors"
+                                >
+                                    Por qué PFLR
+                                </button>
+
                                 <div className="px-2 my-1"><DropdownMenuSeparator /></div>
+
                                 <p className="px-2 text-sm font-semibold text-slate-500 mt-2 mb-1">{t('header.resources')}</p>
                                 <div className="px-2">
                                   <ResourcesDropdownContent inMobileMenu={true} />
                                 </div>
                                 
-                                {navItems.map(item => (
-                                    <button key={item.name} onClick={item.action} className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 transition-colors">
-                                        {item.name}
-                                    </button>
-                                ))}
+                                <button
+                                    onClick={handleFeatureClick}
+                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 transition-colors"
+                                >
+                                    {t('header.pricing')}
+                                </button>
                             </div>
 
                             <div className="mt-auto flex flex-col gap-4">
@@ -309,6 +267,7 @@ const Header = () => {
                                 <Link to="/iniciar-sesion" onClick={() => setIsMobileMenuOpen(false)} className="h-12 w-full text-base font-medium rounded-md hover:bg-slate-100 transition-colors flex items-center justify-center">
                                     {t('header.signIn')}
                                 </Link>
+
                                 <motion.button
                                     onClick={() => handleFeatureClick()}
                                     className="w-full h-11 bg-blue-600 text-white font-bold text-base rounded-full"
@@ -321,7 +280,7 @@ const Header = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </header>
+        </header> 
     );
 };
 
