@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -46,13 +47,15 @@ const Hero = () => {
                 className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-5"
                 variants={item}
               >
-                <Button
-                  size="lg"
-                  className="relative inline-flex h-11 md:h-12 items-center rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm md:text-base pl-10 pr-6 md:pr-7 shadow-lg shadow-blue-500/15 hover:shadow-xl transition-all"
-                >
-                  <span className="absolute left-3 text-red-500 text-lg">🔥</span>
-                  <span className="flex-grow text-center">{t('hero.button')}</span>
-                </Button>
+                <Link to="/dashboard">
+                  <Button
+                    size="lg"
+                    className="relative inline-flex h-11 md:h-12 items-center rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold text-sm md:text-base pl-10 pr-6 md:pr-7 shadow-lg shadow-blue-500/15 hover:shadow-xl transition-all"
+                  >
+                    <span className="absolute left-3 text-red-500 text-lg">🔥</span>
+                    <span className="flex-grow text-center">{t('hero.button')}</span>
+                  </Button>
+                </Link>
               </motion.div>
 
               <motion.div
