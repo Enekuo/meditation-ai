@@ -1,104 +1,179 @@
-import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
 import {
   LayoutDashboard,
   Lightbulb,
-  HelpCircle,
+  LifeBuoy,
   Settings,
-  ChevronsLeft,
   Globe,
-  ChevronDown
-} from 'lucide-react';
-import { useTranslation } from '@/lib/i18n';
+  ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { useTranslation } from "@/lib/i18n";
 
-const FreeLayout = () => {
+export default function FreeLayout() {
   const { language } = useTranslation();
   const location = useLocation();
+  const pathname = location.pathname;
 
-  const isDashboard = location.pathname === '/dashboard';
+  const [collapsed, setCollapsed] = useState(false);
+
+  const showText = !collapsed;
+  const isDashboard = pathname === "/dashboard";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
-      <header className="sticky top-0 z-40 w-full h-16 bg-white border-b border-slate-200">
-        <div className="h-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              style={{ fontFamily: "'Quicksand', sans-serif" }}
-              className="text-[30px] leading-none font-bold text-slate-900 tracking-tight"
-            >
-              Portfolio Controller
-            </Link>
-          </div>
+    <div className="min-h-screen bg-[#F7F9FC] text-slate-900 flex">
+      {/* LOGO FIJO */}
+      <div
+        className="fixed top-0 left-0 h-16 bg-white flex items-center z-[60]"
+        style={{ width: collapsed ? 64 : 192 }}
+      >
+        <div className="flex items-center px-4 pl-16">
+          <span
+            style={{ fontFamily: "'Quicksand', sans-serif" }}
+            className="font-bold tracking-tight text-[22px] whitespace-nowrap text-slate-900"
+          >
+            Portfolio Controller
+          </span>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
-              <Globe size={16} />
-              {language}
-              <ChevronDown size={16} className="opacity-70" />
+      {/* SIDEBAR */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-screen
+          bg-white flex flex-col pt-16 pb-2
+          transition-[width] duration-200
+          overflow-visible
+          ${collapsed ? "w-16 px-2" : "w-48 px-4"}
+        `}
+      >
+        <div className="flex-1 flex flex-col">
+          {/* BLOQUE SUPERIOR */}
+          <nav className="space-y-1 text-sm mt-4">
+            <Link
+              to="/dashboard"
+              className={`
+                w-full flex items-center gap-2 px-3 h-11 rounded-lg
+                ${collapsed ? "justify-center" : ""}
+                ${
+                  isDashboard
+                    ? "bg-slate-900 text-white font-medium"
+                    : "hover:bg-slate-100 text-slate-700"
+                }
+              `}
+            >
+              <LayoutDashboard size={18} />
+              {showText && <span>Dashboard</span>}
+            </Link>
+          </nav>
+
+          <div className="flex-1" />
+
+          {/* BLOQUE INFERIOR */}
+          <div className="space-y-1 text-sm mb-2">
+            <button
+              className={`
+                w-full flex items-center gap-2 px-3 h-10 rounded-lg
+                ${collapsed ? "justify-center" : ""}
+                hover:bg-slate-100 text-slate-700
+              `}
+            >
+              <Lightbulb size={18} />
+              {showText && <span>Sugerencias</span>}
             </button>
 
             <button
-              className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm shadow-sm hover:bg-blue-700 transition-colors"
+              className={`
+                w-full flex items-center gap-2 px-3 h-10 rounded-lg
+                ${collapsed ? "justify-center" : ""}
+                hover:bg-slate-100 text-slate-700
+              `}
+            >
+              <LifeBuoy size={18} />
+              {showText && <span>Ayuda</span>}
+            </button>
+
+            <button
+              className={`
+                w-full flex items-center gap-2 px-3 h-10 rounded-lg
+                ${collapsed ? "justify-center" : ""}
+                hover:bg-slate-100 text-slate-700
+              `}
+            >
+              <Settings size={18} />
+              {showText && <span>Ajustes</span>}
+            </button>
+          </div>
+
+          {/* CONTRAER */}
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className={`
+              w-full flex items-center
+              ${collapsed ? "justify-center" : "justify-start"}
+              gap-2 h-9 text-sm text-slate-500 hover:text-slate-700
+            `}
+          >
+            {collapsed ? (
+              <ChevronsRight size={18} />
+            ) : (
+              <>
+                <ChevronsLeft size={18} />
+                <span>Contraer</span>
+              </>
+            )}
+          </button>
+        </div>
+      </aside>
+
+      {/* COLUMNA DERECHA */}
+      <div
+        className={`flex-1 flex flex-col transition-all ${
+          collapsed ? "ml-16" : "ml-48"
+        }`}
+      >
+        {/* HEADER */}
+        <header
+          className="h-16 px-8 flex items-center justify-between bg-white border-b border-slate-200 fixed top-0 right-0 z-40"
+          style={{ left: collapsed ? 64 : 192 }}
+        >
+          <div className="w-[180px]" />
+
+          <div className="flex-1 min-w-0 flex items-center justify-center px-4" />
+
+          <div className="flex items-center gap-3">
+            <button
+              className="
+                h-9 px-3 rounded-full border border-slate-200 bg-white
+                flex items-center gap-1.5 text-sm font-medium text-slate-700
+                hover:bg-slate-50
+              "
+            >
+              <Globe size={16} />
+              <span>{language}</span>
+              <ChevronDown size={14} className="opacity-70" />
+            </button>
+
+            <button
+              type="button"
+              className="h-9 w-9 rounded-full border border-slate-200 bg-[#0B66C3] text-white overflow-hidden flex items-center justify-center hover:bg-[#0957a5] font-semibold text-sm"
               aria-label="Cuenta"
+              title="Cuenta"
             >
               E
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="flex min-h-[calc(100vh-64px)]">
-        <aside className="w-[250px] bg-white border-r border-slate-200 flex flex-col justify-between">
-          <div className="p-4">
-            <nav className="space-y-2">
-              <Link
-                to="/dashboard"
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium transition-colors ${
-                  isDashboard
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <LayoutDashboard size={18} />
-                <span>Dashboard</span>
-              </Link>
-            </nav>
-          </div>
-
-          <div className="p-4">
-            <div className="space-y-1">
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-[15px] font-medium text-left">
-                <Lightbulb size={18} />
-                <span>Sugerencias</span>
-              </button>
-
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-[15px] font-medium text-left">
-                <HelpCircle size={18} />
-                <span>Ayuda</span>
-              </button>
-
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors text-[15px] font-medium text-left">
-                <Settings size={18} />
-                <span>Ajustes</span>
-              </button>
-
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors text-[15px] font-medium text-left mt-2">
-                <ChevronsLeft size={18} />
-                <span>Contraer</span>
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        <main className="flex-1 min-w-0">
-          <div className="p-6 md:p-8">
+        {/* CONTENIDO */}
+        <main className="flex-1 mt-16 py-8 border-l border-slate-200">
+          <div className="px-8">
             <Outlet />
           </div>
         </main>
       </div>
     </div>
   );
-};
-
-export default FreeLayout;
+}
