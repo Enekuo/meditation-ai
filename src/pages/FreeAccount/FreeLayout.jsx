@@ -23,137 +23,25 @@ export default function FreeLayout() {
   const isDashboard = pathname === "/dashboard";
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] text-slate-900 flex">
-      {/* LOGO FIJO */}
-      <div
-        className="fixed top-0 left-0 h-16 bg-white flex items-center z-[60]"
-        style={{ width: collapsed ? 64 : 192 }}
-      >
-        <div className="flex items-center px-4 pl-16">
-          <span
-            style={{ fontFamily: "'Quicksand', sans-serif" }}
-            className="font-bold tracking-tight text-[22px] whitespace-nowrap text-slate-900"
-          >
-            Portfolio Controller
-          </span>
-        </div>
-      </div>
-
-      {/* SIDEBAR */}
-      <aside
-        className={`
-          fixed top-0 left-0 h-screen
-          bg-white flex flex-col pt-16 pb-2
-          transition-[width] duration-200
-          overflow-visible
-          ${collapsed ? "w-16 px-2" : "w-48 px-4"}
-        `}
-      >
-        <div className="flex-1 flex flex-col">
-          {/* BLOQUE SUPERIOR */}
-          <nav className="space-y-1 text-sm mt-4">
+    <div className="min-h-screen bg-[#F7F9FC] text-slate-900">
+      {/* HEADER SUPERIOR */}
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center">
             <Link
-              to="/dashboard"
-              className={`
-                w-full flex items-center gap-2 px-3 h-11 rounded-lg
-                ${collapsed ? "justify-center" : ""}
-                ${
-                  isDashboard
-                    ? "bg-slate-900 text-white font-medium"
-                    : "hover:bg-slate-100 text-slate-700"
-                }
-              `}
+              to="/"
+              style={{ fontFamily: "'Quicksand', sans-serif" }}
+              className="text-xl font-bold text-slate-900 tracking-tight mr-8"
             >
-              <LayoutDashboard size={18} />
-              {showText && <span>Dashboard</span>}
+              Portfolio Controller
             </Link>
-          </nav>
-
-          <div className="flex-1" />
-
-          {/* BLOQUE INFERIOR */}
-          <div className="space-y-1 text-sm mb-2">
-            <button
-              className={`
-                w-full flex items-center gap-2 px-3 h-10 rounded-lg
-                ${collapsed ? "justify-center" : ""}
-                hover:bg-slate-100 text-slate-700
-              `}
-            >
-              <Lightbulb size={18} />
-              {showText && <span>Sugerencias</span>}
-            </button>
-
-            <button
-              className={`
-                w-full flex items-center gap-2 px-3 h-10 rounded-lg
-                ${collapsed ? "justify-center" : ""}
-                hover:bg-slate-100 text-slate-700
-              `}
-            >
-              <LifeBuoy size={18} />
-              {showText && <span>Ayuda</span>}
-            </button>
-
-            <button
-              className={`
-                w-full flex items-center gap-2 px-3 h-10 rounded-lg
-                ${collapsed ? "justify-center" : ""}
-                hover:bg-slate-100 text-slate-700
-              `}
-            >
-              <Settings size={18} />
-              {showText && <span>Ajustes</span>}
-            </button>
           </div>
 
-          {/* CONTRAER */}
-          <button
-            onClick={() => setCollapsed((v) => !v)}
-            className={`
-              w-full flex items-center
-              ${collapsed ? "justify-center" : "justify-start"}
-              gap-2 h-9 text-sm text-slate-500 hover:text-slate-700
-            `}
-          >
-            {collapsed ? (
-              <ChevronsRight size={18} />
-            ) : (
-              <>
-                <ChevronsLeft size={18} />
-                <span>Contraer</span>
-              </>
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* COLUMNA DERECHA */}
-      <div
-        className={`flex-1 flex flex-col transition-all ${
-          collapsed ? "ml-16" : "ml-48"
-        }`}
-      >
-        {/* HEADER */}
-        <header
-          className="h-16 px-8 flex items-center justify-between bg-white border-b border-slate-200 fixed top-0 right-0 z-40"
-          style={{ left: collapsed ? 64 : 192 }}
-        >
-          <div className="w-[180px]" />
-
-          <div className="flex-1 min-w-0 flex items-center justify-center px-4" />
-
-          <div className="flex items-center gap-3">
-            <button
-              className="
-                h-9 px-3 rounded-full border border-slate-200 bg-white
-                flex items-center gap-1.5 text-sm font-medium text-slate-700
-                hover:bg-slate-50
-              "
-            >
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
               <Globe size={16} />
-              <span>{language}</span>
-              <ChevronDown size={14} className="opacity-70" />
+              {language}
+              <ChevronDown size={16} className="opacity-70" />
             </button>
 
             <button
@@ -165,14 +53,98 @@ export default function FreeLayout() {
               E
             </button>
           </div>
-        </header>
+        </div>
+      </header>
+
+      {/* CUERPO */}
+      <div className="flex pt-16">
+        {/* SIDEBAR */}
+        <aside
+          className={`fixed left-0 top-16 bottom-0 bg-white border-r border-slate-200 flex flex-col justify-between transition-all duration-200 ${
+            collapsed ? "w-16 px-2" : "w-48 px-4"
+          }`}
+        >
+          <div className="flex-1 flex flex-col">
+            {/* ARRIBA */}
+            <nav className="space-y-1 text-sm mt-4">
+              <Link
+                to="/dashboard"
+                className={`w-full flex items-center gap-2 px-3 h-11 rounded-lg ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  isDashboard
+                    ? "bg-slate-900 text-white font-medium"
+                    : "hover:bg-slate-100 text-slate-700"
+                }`}
+              >
+                <LayoutDashboard size={18} />
+                {showText && <span>Dashboard</span>}
+              </Link>
+            </nav>
+
+            <div className="flex-1" />
+
+            {/* ABAJO */}
+            <div className="space-y-1 text-sm mb-2">
+              <button
+                className={`w-full flex items-center gap-2 px-3 h-10 rounded-lg ${
+                  collapsed ? "justify-center" : ""
+                } hover:bg-slate-100 text-slate-700`}
+              >
+                <Lightbulb size={18} />
+                {showText && <span>Sugerencias</span>}
+              </button>
+
+              <button
+                className={`w-full flex items-center gap-2 px-3 h-10 rounded-lg ${
+                  collapsed ? "justify-center" : ""
+                } hover:bg-slate-100 text-slate-700`}
+              >
+                <LifeBuoy size={18} />
+                {showText && <span>Ayuda</span>}
+              </button>
+
+              <button
+                className={`w-full flex items-center gap-2 px-3 h-10 rounded-lg ${
+                  collapsed ? "justify-center" : ""
+                } hover:bg-slate-100 text-slate-700`}
+              >
+                <Settings size={18} />
+                {showText && <span>Ajustes</span>}
+              </button>
+            </div>
+
+            {/* CONTRAER */}
+            <button
+              onClick={() => setCollapsed((v) => !v)}
+              className={`w-full flex items-center ${
+                collapsed ? "justify-center" : "justify-start"
+              } gap-2 h-9 text-sm text-slate-500 hover:text-slate-700 mb-2`}
+            >
+              {collapsed ? (
+                <ChevronsRight size={18} />
+              ) : (
+                <>
+                  <ChevronsLeft size={18} />
+                  <span>Contraer</span>
+                </>
+              )}
+            </button>
+          </div>
+        </aside>
 
         {/* CONTENIDO */}
-        <main className="flex-1 mt-16 py-8 border-l border-slate-200">
-          <div className="px-8">
-            <Outlet />
-          </div>
-        </main>
+        <div
+          className={`flex-1 transition-all duration-200 ${
+            collapsed ? "ml-16" : "ml-48"
+          }`}
+        >
+          <main className="min-h-[calc(100vh-64px)] border-l border-slate-200">
+            <div className="px-8 py-8">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
