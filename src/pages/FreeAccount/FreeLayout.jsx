@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
+  SquarePen,
 } from "lucide-react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n";
@@ -21,6 +22,7 @@ export default function FreeLayout() {
 
   const showText = !collapsed;
   const isDashboard = pathname === "/dashboard";
+  const isPortfolioInput = pathname === "/portfolio-input";
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] text-slate-900">
@@ -66,7 +68,7 @@ export default function FreeLayout() {
         >
           <div className="flex-1 flex flex-col">
             {/* ARRIBA */}
-            <nav className="space-y-1 text-sm mt-4">
+            <nav className="space-y-2 text-sm mt-4">
               <Link
                 to="/dashboard"
                 className={`w-full flex items-center gap-2 px-3 h-11 rounded-lg ${
@@ -79,6 +81,20 @@ export default function FreeLayout() {
               >
                 <LayoutDashboard size={18} />
                 {showText && <span>Dashboard</span>}
+              </Link>
+
+              <Link
+                to="/portfolio-input"
+                className={`w-full flex items-center gap-2 px-3 h-11 rounded-lg ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  isPortfolioInput
+                    ? "bg-slate-900 text-white font-medium"
+                    : "hover:bg-slate-100 text-slate-700"
+                }`}
+              >
+                <SquarePen size={18} />
+                {showText && <span>Edit Portfolio</span>}
               </Link>
             </nav>
 
