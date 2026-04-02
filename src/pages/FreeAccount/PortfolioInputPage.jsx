@@ -209,26 +209,26 @@ const PortfolioInputPage = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
-      <div className="max-w-[1480px] mx-auto px-6 py-6">
-        <div className="mb-6">
-          <div className="w-12 h-[5px] rounded-full bg-blue-500 mb-3" />
-          <h1 className="text-[30px] leading-none font-bold text-[#24375d]">
+      <div className="max-w-[1280px] mx-auto px-5 py-5">
+        <div className="mb-5">
+          <div className="w-10 h-1 rounded-full bg-blue-500 mb-2" />
+          <h1 className="text-[24px] leading-none font-bold text-[#24375d]">
             Portfolio Input
           </h1>
         </div>
 
         {/* DATOS GENERALES */}
-        <div className="bg-white border border-[#e7ebf3] rounded-[24px] shadow-[0_4px_18px_rgba(31,41,55,0.04)] overflow-hidden mb-6">
-          <div className="px-6 py-5 bg-[#f5f8ff] border-b border-[#e7ebf3]">
-            <h2 className="text-[20px] font-bold text-[#2f3a56]">
+        <div className="bg-white border border-[#e7ebf3] rounded-[20px] shadow-[0_4px_18px_rgba(31,41,55,0.04)] overflow-hidden mb-5">
+          <div className="px-5 py-4 bg-[#f5f8ff] border-b border-[#e7ebf3]">
+            <h2 className="text-[17px] font-bold text-[#2f3a56]">
               Datos Generales
             </h2>
           </div>
 
-          <div className="px-6 py-6">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
+          <div className="px-5 py-5">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Efectivo Disponible
                 </label>
                 <input
@@ -237,19 +237,19 @@ const PortfolioInputPage = () => {
                   value={generalData.cash}
                   onChange={handleGeneralChange}
                   placeholder="0.00"
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Benchmark
                 </label>
                 <select
                   name="benchmark"
                   value={generalData.benchmark}
                   onChange={handleGeneralChange}
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
                 >
                   {benchmarkOptions.map((option) => (
                     <option key={option} value={option}>
@@ -260,7 +260,7 @@ const PortfolioInputPage = () => {
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Retorno Benchmark (%)
                 </label>
                 <input
@@ -269,21 +269,21 @@ const PortfolioInputPage = () => {
                   value={generalData.benchmarkReturn}
                   onChange={handleGeneralChange}
                   placeholder="10.00"
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-5 items-end">
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 items-end">
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Moneda Base
                 </label>
                 <select
                   name="currency"
                   value={generalData.currency}
                   onChange={handleGeneralChange}
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
                 >
                   {currencyOptions.map((option) => (
                     <option key={option} value={option}>
@@ -294,7 +294,7 @@ const PortfolioInputPage = () => {
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Impuestos Dividendos (%)
                 </label>
                 <input
@@ -303,12 +303,12 @@ const PortfolioInputPage = () => {
                   value={generalData.taxDividends}
                   onChange={handleGeneralChange}
                   placeholder="0.00"
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Impuestos Ganancias (%)
                 </label>
                 <input
@@ -317,12 +317,12 @@ const PortfolioInputPage = () => {
                   value={generalData.taxGains}
                   onChange={handleGeneralChange}
                   placeholder="0.00"
-                  className="w-full h-[56px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[46px] rounded-xl border border-[#d9e2f1] px-3 text-[16px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div className="xl:col-span-1">
-                <div className="h-[56px] rounded-2xl border border-[#d9e2f1] bg-[#fbfcff] px-4 flex items-center text-[16px] font-semibold text-[#5d6b85]">
+                <div className="h-[46px] rounded-xl border border-[#d9e2f1] bg-[#fbfcff] px-3 flex items-center text-[14px] font-semibold text-[#5d6b85]">
                   {formattedCashPreview}
                 </div>
               </div>
@@ -330,14 +330,14 @@ const PortfolioInputPage = () => {
               <button
                 type="button"
                 onClick={handleSaveGeneralData}
-                className="h-[56px] px-8 rounded-2xl bg-[#3f7ee8] text-white text-[18px] font-bold hover:bg-[#316fda] transition-colors"
+                className="h-[46px] px-6 rounded-xl bg-[#3f7ee8] text-white text-[15px] font-bold hover:bg-[#316fda] transition-colors"
               >
                 Guardar
               </button>
             </div>
 
             {generalSavedMessage ? (
-              <p className="mt-4 text-[14px] font-semibold text-[#39a96b]">
+              <p className="mt-3 text-[13px] font-semibold text-[#39a96b]">
                 {generalSavedMessage}
               </p>
             ) : null}
@@ -345,17 +345,17 @@ const PortfolioInputPage = () => {
         </div>
 
         {/* AÑADIR POSICIÓN */}
-        <div className="bg-white border border-[#e7ebf3] rounded-[24px] shadow-[0_4px_18px_rgba(31,41,55,0.04)] overflow-hidden">
-          <div className="px-6 py-5 bg-[#f5f8ff] border-b border-[#e7ebf3]">
-            <h2 className="text-[20px] font-bold text-[#2f3a56]">
+        <div className="bg-white border border-[#e7ebf3] rounded-[20px] shadow-[0_4px_18px_rgba(31,41,55,0.04)] overflow-hidden">
+          <div className="px-5 py-4 bg-[#f5f8ff] border-b border-[#e7ebf3]">
+            <h2 className="text-[17px] font-bold text-[#2f3a56]">
               Añadir Posición
             </h2>
           </div>
 
-          <div className="px-6 py-6 border-b border-[#e7ebf3]">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-5 mb-5">
+          <div className="px-5 py-5 border-b border-[#e7ebf3]">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Ticker
                 </label>
                 <input
@@ -364,12 +364,12 @@ const PortfolioInputPage = () => {
                   value={formData.ticker}
                   onChange={handlePositionChange}
                   placeholder="AAPL"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400 uppercase"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400 uppercase"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Precio Actual
                 </label>
                 <input
@@ -378,19 +378,19 @@ const PortfolioInputPage = () => {
                   value={formData.price}
                   onChange={handlePositionChange}
                   placeholder="180.00"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Sector
                 </label>
                 <select
                   name="sector"
                   value={formData.sector}
                   onChange={handlePositionChange}
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
                 >
                   <option value="">Seleccionar</option>
                   {sectorOptions.map((option) => (
@@ -402,14 +402,14 @@ const PortfolioInputPage = () => {
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Tipo de Inversión
                 </label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handlePositionChange}
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
                 >
                   <option value="">Seleccionar</option>
                   {typeOptions.map((option) => (
@@ -421,9 +421,9 @@ const PortfolioInputPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto_auto] gap-5 items-end">
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto_auto] gap-4 items-end">
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Cantidad de Acciones
                 </label>
                 <input
@@ -432,12 +432,12 @@ const PortfolioInputPage = () => {
                   value={formData.shares}
                   onChange={handlePositionChange}
                   placeholder="25"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Costo Promedio
                 </label>
                 <input
@@ -446,12 +446,12 @@ const PortfolioInputPage = () => {
                   value={formData.avgCost}
                   onChange={handlePositionChange}
                   placeholder="150.00"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Dividendo Anual
                 </label>
                 <input
@@ -460,12 +460,12 @@ const PortfolioInputPage = () => {
                   value={formData.annualDividend}
                   onChange={handlePositionChange}
                   placeholder="1.20"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <div>
-                <label className="block text-[15px] font-semibold text-[#2f3a56] mb-2">
+                <label className="block text-[13px] font-semibold text-[#2f3a56] mb-2">
                   Ganancia Realizada
                 </label>
                 <input
@@ -474,14 +474,14 @@ const PortfolioInputPage = () => {
                   value={formData.realizedGain}
                   onChange={handlePositionChange}
                   placeholder="0.00"
-                  className="w-full h-[54px] rounded-2xl border border-[#d9e2f1] px-4 text-[18px] text-[#24375d] outline-none focus:border-blue-400"
+                  className="w-full h-[44px] rounded-xl border border-[#d9e2f1] px-3 text-[15px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleAddOrUpdatePosition}
-                className="h-[54px] px-7 rounded-2xl bg-[#3f7ee8] text-white text-[17px] font-bold hover:bg-[#316fda] transition-colors"
+                className="h-[44px] px-5 rounded-xl bg-[#3f7ee8] text-white text-[14px] font-bold hover:bg-[#316fda] transition-colors"
               >
                 {editingId ? "Guardar cambios" : "Añadir posición"}
               </button>
@@ -489,60 +489,60 @@ const PortfolioInputPage = () => {
               <button
                 type="button"
                 onClick={resetForm}
-                className="h-[54px] px-6 rounded-2xl border border-[#d9e2f1] bg-white text-[#2f3a56] text-[17px] font-semibold hover:bg-[#f8fbff] transition-colors"
+                className="h-[44px] px-5 rounded-xl border border-[#d9e2f1] bg-white text-[#2f3a56] text-[14px] font-semibold hover:bg-[#f8fbff] transition-colors"
               >
                 Limpiar
               </button>
             </div>
 
             {formError ? (
-              <p className="mt-4 text-[14px] font-semibold text-[#d94b62]">
+              <p className="mt-3 text-[13px] font-semibold text-[#d94b62]">
                 {formError}
               </p>
             ) : null}
           </div>
 
           {/* POSICIONES AÑADIDAS */}
-          <div className="px-6 py-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[20px] font-bold text-[#2f3a56]">
+          <div className="px-5 py-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[17px] font-bold text-[#2f3a56]">
                 Posiciones Añadidas
               </h3>
 
-              <div className="text-[15px] font-semibold text-[#65728d]">
+              <div className="text-[13px] font-semibold text-[#65728d]">
                 {totalPositions} {totalPositions === 1 ? "posición" : "posiciones"}
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-[20px] border border-[#e7ebf3]">
-              <table className="w-full min-w-[1180px] border-collapse">
+            <div className="overflow-x-auto rounded-[16px] border border-[#e7ebf3]">
+              <table className="w-full min-w-[1100px] border-collapse">
                 <thead className="bg-[#f5f8ff]">
                   <tr>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Ticker
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Precio Actual
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Sector
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Tipo
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Acciones
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Costo Prom.
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Div. Anual
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Gan. Realizada
                     </th>
-                    <th className="text-left px-5 py-4 text-[15px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                    <th className="text-left px-4 py-3 text-[13px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Acciones
                     </th>
                   </tr>
@@ -553,7 +553,7 @@ const PortfolioInputPage = () => {
                     <tr>
                       <td
                         colSpan={9}
-                        className="px-5 py-10 text-center text-[16px] font-medium text-[#94a3b8]"
+                        className="px-4 py-8 text-center text-[14px] font-medium text-[#94a3b8]"
                       >
                         Todavía no has añadido ninguna posición.
                       </td>
@@ -561,36 +561,36 @@ const PortfolioInputPage = () => {
                   ) : (
                     positions.map((position) => (
                       <tr key={position.id} className="bg-white">
-                        <td className="px-5 py-4 text-[16px] font-semibold text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] font-semibold text-[#24375d] border-b border-[#edf1f7]">
                           {position.ticker}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {formatMoney(position.price)}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.sector}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.type}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.shares}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {formatMoney(position.avgCost)}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {formatMoney(position.annualDividend)}
                         </td>
-                        <td className="px-5 py-4 text-[16px] text-[#24375d] border-b border-[#edf1f7]">
+                        <td className="px-4 py-3 text-[14px] text-[#24375d] border-b border-[#edf1f7]">
                           {formatMoney(position.realizedGain)}
                         </td>
-                        <td className="px-5 py-4 border-b border-[#edf1f7]">
-                          <div className="flex items-center gap-3">
+                        <td className="px-4 py-3 border-b border-[#edf1f7]">
+                          <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => handleEditPosition(position)}
-                              className="h-[42px] px-5 rounded-xl bg-[#3f7ee8] text-white text-[15px] font-bold hover:bg-[#316fda] transition-colors"
+                              className="h-[36px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[13px] font-bold hover:bg-[#316fda] transition-colors"
                             >
                               Editar
                             </button>
@@ -598,7 +598,7 @@ const PortfolioInputPage = () => {
                             <button
                               type="button"
                               onClick={() => handleDeletePosition(position.id)}
-                              className="h-[42px] px-5 rounded-xl bg-[#d94b62] text-white text-[15px] font-bold hover:bg-[#c73c53] transition-colors"
+                              className="h-[36px] px-4 rounded-lg bg-[#d94b62] text-white text-[13px] font-bold hover:bg-[#c73c53] transition-colors"
                             >
                               Eliminar
                             </button>
