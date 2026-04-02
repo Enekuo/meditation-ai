@@ -1,7 +1,183 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  calculatePortfolioTotals,
+  calculateSectorDistribution,
+  calculateInvestmentTypeDistribution,
+  calculateTopHoldings,
+} from "@/lib/portfolioCalculations";
+
+const GENERAL_STORAGE_KEY = "portfolio_general_data";
+const POSITIONS_STORAGE_KEY = "portfolio_positions";
+
+const HOLDING_COLORS = [
+  "#26457f",
+  "#4e84ff",
+  "#7aa56d",
+  "#7ab9ff",
+  "#b1965e",
+  "#8c63d8",
+  "#b98bf2",
+  "#79a96a",
+  "#295da8",
+  "#ad6230",
+  "#f3872d",
+  "#a8bfd9",
+  "#85b864",
+  "#488bb8",
+  "#f1ce4b",
+  "#6ab5ff",
+  "#d9bfd9",
+];
+
+const TYPE_COLORS = {
+  Especulativa: "#4d7cff",
+  "Largo Plazo": "#72bf69",
+  Dividendos: "#23447d",
+  "Sin tipo": "#cbd5e1",
+};
+
+const SECTOR_COLORS = [
+  "#4d7cff",
+  "#72bf69",
+  "#23447d",
+  "#8c63d8",
+  "#f3872d",
+  "#7ab9ff",
+  "#b1965e",
+  "#85b864",
+  "#488bb8",
+  "#f1ce4b",
+];
+
+const emptyGeneralData = {
+  cash: 0,
+  benchmark: "S&P500",
+  benchmarkReturn: 0,
+  currency: "USD",
+  taxDividends: 0,
+  taxGains: 0,
+};
+
+const formatMoney = (value, currency = "USD") => {
+  const num = Number(value || 0);
+  return `${currency} ${num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
+const formatPercent = (value) => {
+  const num = Number(value || 0);
+  return `${num.toFixed(2)}%`;
+};
+
+const formatCompactPercent = (value) => {
+  const num = Number(value || 0);
+  return `${Math.round(num)}%`;
+};
+
+const getAmountColor = (value) => {
+  const num = Number(value || 0);
+  if (num > 0) return "#4aa56d";
+  if (num < 0) return "#d94b62";
+  return "#94a3b8";
+};
+
+const buildConicGradient = (items, colorGetter) => {
+  if (!items.length) {
+    return "conic-gradient(#e2e8f0 0deg 360deg)";
+  }
+
+  let start = 0;
+  const stops = items.map((item, index) => {
+    const percent = Number(item.percent || 0);
+    const degrees = (percent / 100) * 360;
+    const end = start + degrees;
+    const color = colorGetter(item, index);
+    const segment = `${color} ${start}deg ${end}deg`;
+    start = end;
+    return segment;
+  });
+
+  if (start < 360) {
+    stops.push(`#e2e8f0 ${start}deg 360deg`);
+  }
+
+  return `conic-gradient(${stops.join(",")})`;
+};
 
 const DashboardPage = () => {
-  const hasPositions = false;
+  const [generalData, setGeneralData] = useState(emptyGeneralData);
+  const [positions, setPositions] = useState([]);
+
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        const savedGeneral = JSON.parse(
+          localStorage.getItem(GENERAL_STORAGE_KEY) || "{}"
+        );
+        const savedPositions = JSON.parse(
+          localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]"
+        );
+
+        setGeneralData({ ...emptyGeneralData, ...savedGeneral });
+        setPositions(Array.isArray(savedPositions) ? savedPositions : []);
+      } catch {
+        setGeneralData(emptyGeneralData);
+        setPositions([]);
+      }
+    };
+
+    loadData();
+
+    const handleStorage = () => loadData();
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", loadData);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", loadData);
+    };
+  }, []);
+
+  const totals = useMemo(
+    () => calculatePortfolioTotals(generalData, positions),
+    [generalData, positions]
+  );
+
+  const sectors = useMemo(
+    () => calculateSectorDistribution(positions),
+    [positions]
+  );
+
+  const investmentTypes = useMemo(
+    () => calculateInvestmentTypeDistribution(positions),
+    [positions]
+  );
+
+  const topHoldings = useMemo(
+    () => calculateTopHoldings(positions, 10),
+    [positions]
+  );
+
+  const hasPositions = positions.length > 0;
+
+  const holdingsGradient = buildConicGradient(
+    topHoldings,
+    (_, index) => HOLDING_COLORS[index % HOLDING_COLORS.length]
+  );
+
+  const typeGradient = buildConicGradient(
+    investmentTypes,
+    (item) => TYPE_COLORS[item.type] || "#cbd5e1"
+  );
+
+  const sectorGradient = buildConicGradient(
+    sectors,
+    (_, index) => SECTOR_COLORS[index % SECTOR_COLORS.length]
+  );
+
+  const benchmarkLabel = generalData.benchmark || "Benchmark";
 
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
@@ -21,7 +197,7 @@ const DashboardPage = () => {
                 Valor Actual
               </p>
               <h2 className="text-[28px] leading-none font-bold text-[#202b45]">
-                $ 0.00
+                {formatMoney(totals.portfolioValue, generalData.currency)}
               </h2>
             </div>
 
@@ -38,9 +214,12 @@ const DashboardPage = () => {
               </div>
 
               <div className="text-right">
-                <p className="text-[14px] font-bold text-[#2c3651]">$0.00</p>
+                <p className="text-[14px] font-bold text-[#2c3651]">
+                  {formatMoney(totals.cash, generalData.currency)}
+                </p>
                 <p className="text-[11px] font-semibold text-[#94a3b8]">
-                  0.00 (0.00%)
+                  {formatMoney(totals.cash, generalData.currency)} (
+                  {formatPercent(totals.cashWeight)})
                 </p>
               </div>
             </div>
@@ -60,11 +239,13 @@ const DashboardPage = () => {
               </div>
 
               <div className="text-right">
-                <p className="text-[14px] font-bold text-[#2c3651]">$0.00</p>
+                <p className="text-[14px] font-bold text-[#2c3651]">
+                  {formatMoney(totals.positionsValueTotal, generalData.currency)}
+                </p>
                 <p className="text-[11px] font-semibold text-[#94a3b8] leading-[1.2]">
-                  0.00
+                  {formatMoney(totals.positionsValueTotal, generalData.currency)}
                   <br />
-                  (0.00%)
+                  ({formatPercent(totals.investedWeight)})
                 </p>
               </div>
             </div>
@@ -75,30 +256,38 @@ const DashboardPage = () => {
                   <div
                     className="w-full h-full rounded-full"
                     style={{
-                      background: "conic-gradient(#e2e8f0 0deg 360deg)",
+                      background: buildConicGradient(
+                        [
+                          { percent: totals.cashWeight },
+                          { percent: totals.investedWeight },
+                        ],
+                        (_, index) => (index === 0 ? "#7ecb9b" : "#4d7cff")
+                      ),
                     }}
                   />
                   <div className="absolute inset-[22px] rounded-full bg-white flex items-center justify-center border border-[#edf1f7]">
-                    <span className="text-[34px] leading-none text-[#94a3b8]">$</span>
+                    <span className="text-[34px] leading-none text-[#94a3b8]">
+                      $
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#cbd5e1]" />
+                      <span className="w-3.5 h-3.5 rounded-full bg-[#7ecb9b]" />
                       <span className="text-[13px] text-[#3a4560] font-medium">
                         Efectivo
                       </span>
                     </div>
                     <span className="text-[13px] font-semibold text-[#2f3a56]">
-                      0%
+                      {formatCompactPercent(totals.cashWeight)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#cbd5e1]" />
+                      <span className="w-3.5 h-3.5 rounded-full bg-[#4d7cff]" />
                       <span className="text-[13px] text-[#3a4560] font-medium leading-[1.1]">
                         Cantidad
                         <br />
@@ -106,7 +295,7 @@ const DashboardPage = () => {
                       </span>
                     </div>
                     <span className="text-[13px] font-semibold text-[#2f3a56]">
-                      0%
+                      {formatCompactPercent(totals.investedWeight)}
                     </span>
                   </div>
                 </div>
@@ -117,7 +306,7 @@ const DashboardPage = () => {
                   Cantidad De Acciones
                 </p>
                 <p className="text-[30px] leading-none mt-1 font-bold text-[#3471e6]">
-                  0
+                  {totals.positionsCount}
                 </p>
               </div>
             </div>
@@ -131,14 +320,38 @@ const DashboardPage = () => {
 
             <div className="flex-1 flex items-center justify-center">
               {hasPositions ? (
-                <div
-                  className="relative w-[250px] h-[250px] rounded-full"
-                  style={{
-                    background:
-                      "conic-gradient(#26457f 0deg 46deg,#4e84ff 46deg 72deg,#7aa56d 72deg 98deg,#7ab9ff 98deg 124deg,#b1965e 124deg 145deg,#8c63d8 145deg 168deg,#b98bf2 168deg 190deg,#79a96a 190deg 214deg,#295da8 214deg 238deg,#ad6230 238deg 262deg,#f3872d 262deg 286deg,#a8bfd9 286deg 306deg,#85b864 306deg 322deg,#488bb8 322deg 336deg,#f1ce4b 336deg 347deg,#6ab5ff 347deg 356deg,#d9bfd9 356deg 360deg)",
-                  }}
-                >
+                <div className="relative w-[250px] h-[250px] rounded-full">
+                  <div
+                    className="w-full h-full rounded-full"
+                    style={{ background: holdingsGradient }}
+                  />
                   <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
+
+                  {topHoldings.map((item, index) => {
+                    const angle =
+                      topHoldings
+                        .slice(0, index)
+                        .reduce((sum, holding) => sum + holding.weightPercent, 0) +
+                      item.weightPercent / 2;
+                    const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
+                    const radius = 158;
+                    const x = 125 + Math.cos(radians) * radius;
+                    const y = 125 + Math.sin(radians) * radius;
+
+                    return (
+                      <div
+                        key={item.id || item.ticker}
+                        className="absolute text-[11px] font-semibold text-[#48536e] whitespace-nowrap"
+                        style={{
+                          left: `${x}px`,
+                          top: `${y}px`,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      >
+                        {item.ticker} {formatCompactPercent(item.weightPercent)}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="relative w-[250px] h-[250px] rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center">
@@ -162,7 +375,9 @@ const DashboardPage = () => {
                   <br />
                   Estimados
                 </p>
-                <p className="mt-2 text-[14px] font-bold text-[#24304a]">$ 0.00</p>
+                <p className="mt-2 text-[14px] font-bold text-[#24304a]">
+                  {formatMoney(totals.annualDividendsTotal, generalData.currency)}
+                </p>
               </div>
 
               <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-3 py-3 text-center h-[98px] flex flex-col justify-center">
@@ -171,7 +386,9 @@ const DashboardPage = () => {
                   <br />
                   Portafolio
                 </p>
-                <p className="mt-2 text-[14px] font-bold text-[#94a3b8]">0.00%</p>
+                <p className="mt-2 text-[14px] font-bold text-[#94a3b8]">
+                  {formatPercent(totals.yieldPercent)}
+                </p>
               </div>
             </div>
 
@@ -182,18 +399,30 @@ const DashboardPage = () => {
 
               <div className="space-y-2">
                 <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">Mi Retorno</span>
-                  <span className="text-[13px] font-bold text-[#24304a]">0.00%</span>
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    Mi Retorno
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatPercent(totals.portfolioReturnPercent)}
+                  </span>
                 </div>
 
                 <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">S&amp;P500</span>
-                  <span className="text-[13px] font-bold text-[#24304a]">0.00%</span>
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    {benchmarkLabel}
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatPercent(totals.benchmarkReturn)}
+                  </span>
                 </div>
 
                 <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">Diferencia</span>
-                  <span className="text-[13px] font-bold text-[#24304a]">0.00%</span>
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    Diferencia
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatPercent(totals.benchmarkDifference)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -207,34 +436,32 @@ const DashboardPage = () => {
                 <div className="relative w-[112px] h-[112px] shrink-0">
                   <div
                     className="w-full h-full rounded-full"
-                    style={{
-                      background: "conic-gradient(#e2e8f0 0deg 360deg)",
-                    }}
+                    style={{ background: typeGradient }}
                   />
                   <div className="absolute inset-[24px] rounded-full bg-white border border-[#edf1f7]" />
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3.5 h-3.5 rounded-sm bg-[#cbd5e1]" />
-                    <span className="text-[13px] text-[#3a4560] font-medium">
-                      Especulativa
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3.5 h-3.5 rounded-sm bg-[#cbd5e1]" />
-                    <span className="text-[13px] text-[#3a4560] font-medium">
-                      Largo Plazo
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-3.5 h-3.5 rounded-sm bg-[#cbd5e1]" />
-                    <span className="text-[13px] text-[#3a4560] font-medium">
-                      Dividendos
-                    </span>
-                  </div>
+                  {(investmentTypes.length
+                    ? investmentTypes
+                    : [
+                        { type: "Especulativa", percent: 0 },
+                        { type: "Largo Plazo", percent: 0 },
+                        { type: "Dividendos", percent: 0 },
+                      ]
+                  ).map((item) => (
+                    <div key={item.type} className="flex items-center gap-2.5">
+                      <span
+                        className="w-3.5 h-3.5 rounded-sm"
+                        style={{
+                          backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
+                        }}
+                      />
+                      <span className="text-[13px] text-[#3a4560] font-medium">
+                        {item.type}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -245,7 +472,6 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 xl:grid-cols-[0.72fr_1.28fr] gap-4 mt-4">
           {/* LEFT SIDE */}
           <div className="flex flex-col gap-4">
-            {/* GANANCIA / PÉRDIDA */}
             <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
                 Ganancia/Pérdida
@@ -256,8 +482,11 @@ const DashboardPage = () => {
                   <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
                     Ganancia/Pérdida (sin realizar)
                   </div>
-                  <div className="px-3 py-2 text-[13px] font-bold text-[#4aa56d]">
-                    $ 0.00
+                  <div
+                    className="px-3 py-2 text-[13px] font-bold"
+                    style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
+                  >
+                    {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
                   </div>
                 </div>
 
@@ -265,8 +494,11 @@ const DashboardPage = () => {
                   <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
                     Ganancia/Pérdida (realizada)
                   </div>
-                  <div className="px-3 py-2 text-[13px] font-bold text-[#4aa56d]">
-                    $ 0.00
+                  <div
+                    className="px-3 py-2 text-[13px] font-bold"
+                    style={{ color: getAmountColor(totals.realizedGainTotal) }}
+                  >
+                    {formatMoney(totals.realizedGainTotal, generalData.currency)}
                   </div>
                 </div>
 
@@ -274,14 +506,16 @@ const DashboardPage = () => {
                   <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
                     Ganancia/Pérdida (TOTAL)
                   </div>
-                  <div className="px-3 py-2 text-[13px] font-bold text-[#4aa56d]">
-                    $ 0.00
+                  <div
+                    className="px-3 py-2 text-[13px] font-bold"
+                    style={{ color: getAmountColor(totals.totalGain) }}
+                  >
+                    {formatMoney(totals.totalGain, generalData.currency)}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* SECTORES PEQUEÑO */}
             <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
                 Sectores
@@ -291,13 +525,13 @@ const DashboardPage = () => {
                 <div className="relative w-[118px] h-[118px] shrink-0">
                   <div
                     className="w-full h-full rounded-full"
-                    style={{
-                      background: "conic-gradient(#e2e8f0 0deg 360deg)",
-                    }}
+                    style={{ background: sectorGradient }}
                   />
                   <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
                     <span className="text-[12px] font-semibold text-[#94a3b8]">
-                      0%
+                      {sectors.length
+                        ? formatCompactPercent(sectors[0].percent)
+                        : "0%"}
                     </span>
                   </div>
                 </div>
