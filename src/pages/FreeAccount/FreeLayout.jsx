@@ -8,7 +8,7 @@ import {
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
-  SquarePen,
+  Pencil,
 } from "lucide-react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n";
@@ -93,7 +93,7 @@ export default function FreeLayout() {
                     : "hover:bg-slate-100 text-slate-700"
                 }`}
               >
-                <SquarePen size={18} />
+                <Pencil size={18} />
                 {showText && <span>Edit Portfolio</span>}
               </Link>
             </nav>
