@@ -32,10 +32,17 @@ export default function FreeLayout() {
           <div className="flex items-center">
             <Link
               to="/"
+              className="flex items-center gap-3 mr-8"
               style={{ fontFamily: "'Quicksand', sans-serif" }}
-              className="text-xl font-bold text-slate-900 tracking-tight mr-8"
             >
-              Portfolio Controller
+              <img
+                src="/logo-icon.png"
+                alt="Portfolio Controller logo"
+                className="w-9 h-9 object-contain shrink-0"
+              />
+              <span className="text-xl font-bold text-slate-900 tracking-tight">
+                Portfolio Controller
+              </span>
             </Link>
           </div>
 
