@@ -31,7 +31,7 @@ export default function FreeLayout() {
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
             <Link
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-0 mr-8 -ml-16"
               style={{ fontFamily: "'Quicksand', sans-serif" }}
             >
