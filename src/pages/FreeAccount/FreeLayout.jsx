@@ -32,7 +32,7 @@ export default function FreeLayout() {
           <div className="flex items-center">
             <Link
               to="/"
-              className="flex items-center gap-3 mr-8"
+              className="flex items-center gap-0 mr-8 -ml-16"
               style={{ fontFamily: "'Quicksand', sans-serif" }}
             >
               <img
