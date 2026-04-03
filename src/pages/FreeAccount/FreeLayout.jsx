@@ -38,7 +38,7 @@ export default function FreeLayout() {
               <img
                 src="/logo-icon.png"
                 alt="Portfolio Controller logo"
-                className="w-9 h-9 object-contain shrink-0"
+                className="w-16 h-16 object-contain shrink-0"
               />
               <span className="text-xl font-bold text-slate-900 tracking-tight">
                 Portfolio Controller
