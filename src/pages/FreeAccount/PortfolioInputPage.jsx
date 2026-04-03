@@ -49,6 +49,7 @@ const PortfolioInputPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [generalSavedMessage, setGeneralSavedMessage] = useState("");
   const [formError, setFormError] = useState("");
+  const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
 
   useEffect(() => {
     const savedGeneral = localStorage.getItem(GENERAL_STORAGE_KEY);
@@ -218,139 +219,149 @@ const PortfolioInputPage = () => {
         </div>
 
         <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden mb-4">
-          <div className="px-4 py-3 bg-[#f5f8ff] border-b border-[#e7ebf3]">
+          <button
+            type="button"
+            onClick={() => setIsGeneralSectionOpen((prev) => !prev)}
+            className="w-full px-4 py-3 bg-[#f5f8ff] border-b border-[#e7ebf3] flex items-center justify-between text-left"
+          >
             <h2 className="text-[15px] font-bold text-[#2f3a56]">
               Datos Generales
             </h2>
-          </div>
 
-          <div className="px-4 py-4">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Efectivo Disponible
-                </label>
-                <input
-                  type="number"
-                  name="cash"
-                  value={generalData.cash}
-                  onChange={handleGeneralChange}
-                  placeholder="0.00"
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
-                />
-              </div>
+            <span className="text-[18px] font-bold text-[#5d6b85] leading-none">
+              {isGeneralSectionOpen ? "−" : "+"}
+            </span>
+          </button>
 
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Benchmark
-                </label>
-                <select
-                  name="benchmark"
-                  value={generalData.benchmark}
-                  onChange={handleGeneralChange}
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
-                >
-                  {benchmarkOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {isGeneralSectionOpen ? (
+            <div className="px-4 py-4">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 mb-3">
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Efectivo Disponible
+                  </label>
+                  <input
+                    type="number"
+                    name="cash"
+                    value={generalData.cash}
+                    onChange={handleGeneralChange}
+                    placeholder="0.00"
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Retorno Benchmark (%)
-                </label>
-                <input
-                  type="number"
-                  name="benchmarkReturn"
-                  value={generalData.benchmarkReturn}
-                  onChange={handleGeneralChange}
-                  placeholder="10.00"
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
-                />
-              </div>
-            </div>
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Benchmark
+                  </label>
+                  <select
+                    name="benchmark"
+                    value={generalData.benchmark}
+                    onChange={handleGeneralChange}
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  >
+                    {benchmarkOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Moneda Base
-                </label>
-                <select
-                  name="currency"
-                  value={generalData.currency}
-                  onChange={handleGeneralChange}
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
-                >
-                  {currencyOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Impuestos Dividendos (%)
-                </label>
-                <input
-                  type="number"
-                  name="taxDividends"
-                  value={generalData.taxDividends}
-                  onChange={handleGeneralChange}
-                  placeholder="0.00"
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Impuestos Ganancias (%)
-                </label>
-                <input
-                  type="number"
-                  name="taxGains"
-                  value={generalData.taxGains}
-                  onChange={handleGeneralChange}
-                  placeholder="0.00"
-                  className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
-                />
-              </div>
-
-              <div>
-                <div className="h-[40px] rounded-lg border border-[#d9e2f1] bg-[#fbfcff] px-3 flex items-center text-[12px] font-semibold text-[#5d6b85]">
-                  {formattedCashPreview}
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Retorno Benchmark (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="benchmarkReturn"
+                    value={generalData.benchmarkReturn}
+                    onChange={handleGeneralChange}
+                    placeholder="10.00"
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
+                  />
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSaveGeneralData}
-                className="h-[40px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[13px] font-bold hover:bg-[#316fda] transition-colors"
-              >
-                Guardar
-              </button>
-            </div>
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Moneda Base
+                  </label>
+                  <select
+                    name="currency"
+                    value={generalData.currency}
+                    onChange={handleGeneralChange}
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                  >
+                    {currencyOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            {generalSavedMessage ? (
-              <p className="mt-2 text-[12px] font-semibold text-[#39a96b]">
-                {generalSavedMessage}
-              </p>
-            ) : null}
-          </div>
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Impuestos Dividendos (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="taxDividends"
+                    value={generalData.taxDividends}
+                    onChange={handleGeneralChange}
+                    placeholder="0.00"
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                    Impuestos Ganancias (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="taxGains"
+                    value={generalData.taxGains}
+                    onChange={handleGeneralChange}
+                    placeholder="0.00"
+                    className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <div className="h-[40px] rounded-lg border border-[#d9e2f1] bg-[#fbfcff] px-3 flex items-center text-[12px] font-semibold text-[#5d6b85]">
+                    {formattedCashPreview}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSaveGeneralData}
+                  className="h-[40px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[13px] font-bold hover:bg-[#316fda] transition-colors"
+                >
+                  Guardar
+                </button>
+              </div>
+
+              {generalSavedMessage ? (
+                <p className="mt-2 text-[12px] font-semibold text-[#39a96b]">
+                  {generalSavedMessage}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
-        <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden">
+        <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden mb-6">
           <div className="px-4 py-3 bg-[#f5f8ff] border-b border-[#e7ebf3]">
             <h2 className="text-[15px] font-bold text-[#2f3a56]">
               Añadir Posición
             </h2>
           </div>
 
-          <div className="px-4 py-4 border-b border-[#e7ebf3]">
+          <div className="px-4 py-4">
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 mb-3">
               <div>
                 <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
@@ -499,7 +510,9 @@ const PortfolioInputPage = () => {
               </p>
             ) : null}
           </div>
+        </div>
 
+        <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden">
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-[15px] font-bold text-[#2f3a56]">
