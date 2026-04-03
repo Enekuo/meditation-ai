@@ -106,6 +106,29 @@ const buildConicGradient = (items, colorGetter) => {
   return `conic-gradient(${stops.join(",")})`;
 };
 
+const buildHoldingsGradient = (items) => {
+  if (!items.length) {
+    return "conic-gradient(#e2e8f0 0deg 360deg)";
+  }
+
+  let start = 0;
+  const stops = items.map((item, index) => {
+    const percent = Number(item.weightPercent || 0);
+    const degrees = (percent / 100) * 360;
+    const end = start + degrees;
+    const color = HOLDING_COLORS[index % HOLDING_COLORS.length];
+    const segment = `${color} ${start}deg ${end}deg`;
+    start = end;
+    return segment;
+  });
+
+  if (start < 360) {
+    stops.push(`#e2e8f0 ${start}deg 360deg`);
+  }
+
+  return `conic-gradient(${stops.join(",")})`;
+};
+
 const DashboardPage = () => {
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
@@ -162,9 +185,9 @@ const DashboardPage = () => {
 
   const hasPositions = positions.length > 0;
 
-  const holdingsGradient = buildConicGradient(
-    topHoldings,
-    (_, index) => HOLDING_COLORS[index % HOLDING_COLORS.length]
+  const holdingsGradient = useMemo(
+    () => buildHoldingsGradient(topHoldings),
+    [topHoldings]
   );
 
   const typeGradient = buildConicGradient(
@@ -318,41 +341,71 @@ const DashboardPage = () => {
               ACCIONES
             </h3>
 
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center py-3">
               {hasPositions ? (
-                <div className="relative w-[250px] h-[250px] rounded-full">
-                  <div
-                    className="w-full h-full rounded-full"
-                    style={{ background: holdingsGradient }}
-                  />
-                  <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
+                <>
+                  <div className="relative w-[250px] h-[250px] rounded-full shrink-0">
+                    <div
+                      className="w-full h-full rounded-full"
+                      style={{ background: holdingsGradient }}
+                    />
+                    <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
 
-                  {topHoldings.map((item, index) => {
-                    const angle =
-                      topHoldings
-                        .slice(0, index)
-                        .reduce((sum, holding) => sum + holding.weightPercent, 0) +
-                      item.weightPercent / 2;
-                    const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
-                    const radius = 158;
-                    const x = 125 + Math.cos(radians) * radius;
-                    const y = 125 + Math.sin(radians) * radius;
+                    {topHoldings.map((item, index) => {
+                      const angle =
+                        topHoldings
+                          .slice(0, index)
+                          .reduce(
+                            (sum, holding) => sum + Number(holding.weightPercent || 0),
+                            0
+                          ) +
+                        Number(item.weightPercent || 0) / 2;
 
-                    return (
+                      const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
+                      const radius = 158;
+                      const x = 125 + Math.cos(radians) * radius;
+                      const y = 125 + Math.sin(radians) * radius;
+
+                      return (
+                        <div
+                          key={item.id || item.ticker}
+                          className="absolute text-[11px] font-semibold whitespace-nowrap"
+                          style={{
+                            left: `${x}px`,
+                            top: `${y}px`,
+                            transform: "translate(-50%, -50%)",
+                            color: HOLDING_COLORS[index % HOLDING_COLORS.length],
+                          }}
+                        >
+                          {item.ticker} {formatCompactPercent(item.weightPercent)}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 max-w-[520px]">
+                    {topHoldings.map((item, index) => (
                       <div
                         key={item.id || item.ticker}
-                        className="absolute text-[11px] font-semibold text-[#48536e] whitespace-nowrap"
-                        style={{
-                          left: `${x}px`,
-                          top: `${y}px`,
-                          transform: "translate(-50%, -50%)",
-                        }}
+                        className="flex items-center gap-2"
                       >
-                        {item.ticker} {formatCompactPercent(item.weightPercent)}
+                        <span
+                          className="w-3.5 h-3.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor:
+                              HOLDING_COLORS[index % HOLDING_COLORS.length],
+                          }}
+                        />
+                        <span className="text-[13px] font-medium text-[#3a4560]">
+                          {item.ticker}
+                        </span>
+                        <span className="text-[13px] font-bold text-[#2f3a56]">
+                          {formatCompactPercent(item.weightPercent)}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="relative w-[250px] h-[250px] rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center">
                   <div className="absolute inset-[67px] rounded-full bg-white border border-[#e2e8f0]" />
