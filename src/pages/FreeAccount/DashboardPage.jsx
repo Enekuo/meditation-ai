@@ -547,27 +547,57 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-                Sectores
-              </h3>
+         <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+  <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+    Sectores
+  </h3>
 
-              <div className="flex items-center justify-center min-h-[160px]">
-                <div className="relative w-[118px] h-[118px] shrink-0">
-                  <div
-                    className="w-full h-full rounded-full"
-                    style={{ background: sectorGradient }}
-                  />
-                  <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
-                    <span className="text-[12px] font-semibold text-[#94a3b8]">
-                      {sectors.length
-                        ? formatCompactPercent(sectors[0].percent)
-                        : "0%"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+  <div className="flex items-center justify-center gap-6 min-h-[160px]">
+    <div className="relative w-[118px] h-[118px] shrink-0">
+      <div
+        className="w-full h-full rounded-full"
+        style={{ background: sectorGradient }}
+      />
+      <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
+        <span className="text-[12px] font-semibold text-[#94a3b8]">
+          {sectors.length ? formatCompactPercent(sectors[0].percent) : "0%"}
+        </span>
+      </div>
+    </div>
+
+    <div className="space-y-3 min-w-[160px]">
+      {sectors.length ? (
+        sectors.map((sector, index) => (
+          <div
+            key={sector.name || sector.sector || `sector-${index}`}
+            className="flex items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="w-3.5 h-3.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: SECTOR_COLORS[index % SECTOR_COLORS.length],
+                }}
+              />
+              <span className="text-[13px] text-[#3a4560] font-medium">
+                {sector.name || sector.sector}
+              </span>
             </div>
+
+            <span className="text-[13px] font-semibold text-[#2f3a56]">
+              {formatCompactPercent(sector.percent)}
+            </span>
+          </div>
+        ))
+      ) : (
+        <div className="text-[13px] font-medium text-[#94a3b8]">
+          Sin sectores
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
           </div>
 
           {/* RIGHT SIDE */}
