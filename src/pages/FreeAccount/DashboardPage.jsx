@@ -383,28 +383,6 @@ const DashboardPage = () => {
                     })}
                   </div>
 
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 max-w-[520px]">
-                    {topHoldings.map((item, index) => (
-                      <div
-                        key={item.id || item.ticker}
-                        className="flex items-center gap-2"
-                      >
-                        <span
-                          className="w-3.5 h-3.5 rounded-full shrink-0"
-                          style={{
-                            backgroundColor:
-                              HOLDING_COLORS[index % HOLDING_COLORS.length],
-                          }}
-                        />
-                        <span className="text-[13px] font-medium text-[#3a4560]">
-                          {item.ticker}
-                        </span>
-                        <span className="text-[13px] font-bold text-[#2f3a56]">
-                          {formatCompactPercent(item.weightPercent)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
                 </>
               ) : (
                 <div className="relative w-[250px] h-[250px] rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center">
