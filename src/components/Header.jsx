@@ -114,11 +114,22 @@ const Header = () => {
 
     return (
         <header className={`sticky top-0 z-50 w-full bg-white transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : 'border-b border-slate-200/80'}`}>
-            <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto flex items-center justify-between h-20 px-6 lg:px-8">
                 
-                <div className="flex items-center">
-                    <Link to="/" style={{ fontFamily: "'Quicksand', sans-serif" }} className="text-xl font-bold text-slate-900 tracking-tight mr-8">
-                        Portfolio Controller
+                <div className="flex items-center gap-[150px]">
+                    <Link
+                        to="/"
+                        style={{ fontFamily: "'Quicksand', sans-serif" }}
+                        className="flex flex-col items-center justify-center leading-none -mt-4"
+                    >
+                        <img
+                            src="/logo-icon.png"
+                            alt="Portfolio Controller logo"
+                            className="w-16 h-12 object-contain shrink-0"
+                        />
+                        <span className="text-[16px] font-bold text-slate-900 tracking-tight uppercase leading-none -mt-2">
+                            Portfolio Controller
+                        </span>
                     </Link>
 
                     <nav className="hidden lg:flex items-center gap-1">
@@ -214,8 +225,20 @@ const Header = () => {
                         className="fixed inset-0 z-[100] bg-white lg:hidden"
                     >
                         <div className="flex justify-between items-center h-16 px-4 border-b border-slate-200">
-                            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} style={{ fontFamily: "'Quicksand', sans-serif" }} className="text-lg font-bold text-slate-900 tracking-tight">
-                                Portfolio Controller
+                            <Link
+                                to="/"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                style={{ fontFamily: "'Quicksand', sans-serif" }}
+                                className="flex items-center gap-2"
+                            >
+                                <img
+                                    src="/logo-icon.png"
+                                    alt="Portfolio Controller logo"
+                                    className="w-10 h-10 object-contain shrink-0"
+                                />
+                                <span className="text-xl font-bold text-slate-900 tracking-tight leading-none">
+                                    Portfolio Controller
+                                </span>
                             </Link>
                             <button onClick={() => setIsMobileMenuOpen(false)}>
                                 <X size={24} className="text-slate-800" />
