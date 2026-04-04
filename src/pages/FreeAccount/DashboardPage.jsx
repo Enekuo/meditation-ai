@@ -4,6 +4,7 @@ import {
   calculateSectorDistribution,
   calculateInvestmentTypeDistribution,
   calculateTopHoldings,
+  normalizePosition,
 } from "@/lib/portfolioCalculations";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
@@ -168,20 +169,46 @@ const DashboardPage = () => {
     [generalData, positions]
   );
 
-const sectors = useMemo(
-  () => calculateSectorDistribution(positions, generalData.currency),
-  [positions, generalData.currency]
-);
+  const sectors = useMemo(
+    () => calculateSectorDistribution(positions, generalData.currency),
+    [positions, generalData.currency]
+  );
 
-const investmentTypes = useMemo(
-  () => calculateInvestmentTypeDistribution(positions, generalData.currency),
-  [positions, generalData.currency]
-);
+  const investmentTypes = useMemo(
+    () => calculateInvestmentTypeDistribution(positions, generalData.currency),
+    [positions, generalData.currency]
+  );
 
-const topHoldings = useMemo(
-  () => calculateTopHoldings(positions, 10, generalData.currency),
-  [positions, generalData.currency]
-);
+  const topHoldings = useMemo(
+    () => calculateTopHoldings(positions, 10, generalData.currency),
+    [positions, generalData.currency]
+  );
+
+  const concentration = useMemo(() => {
+    const sorted = [...topHoldings].sort(
+      (a, b) => Number(b.weightPercent || 0) - Number(a.weightPercent || 0)
+    );
+
+    const sum = (n) =>
+      sorted
+        .slice(0, n)
+        .reduce((acc, item) => acc + Number(item.weightPercent || 0), 0);
+
+    return {
+      top1: sum(1),
+      top3: sum(3),
+      top5: sum(5),
+    };
+  }, [topHoldings]);
+
+  const topGainers = useMemo(() => {
+    return positions
+      .map((position) => normalizePosition(position, generalData.currency))
+      .sort(
+        (a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0)
+      )
+      .slice(0, 3);
+  }, [positions, generalData.currency]);
 
   const hasPositions = positions.length > 0;
 
@@ -343,47 +370,44 @@ const topHoldings = useMemo(
 
             <div className="flex-1 flex flex-col items-center justify-center py-3">
               {hasPositions ? (
-                <>
-                  <div className="relative w-[250px] h-[250px] rounded-full shrink-0">
-                    <div
-                      className="w-full h-full rounded-full"
-                      style={{ background: holdingsGradient }}
-                    />
-                    <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
+                <div className="relative w-[250px] h-[250px] rounded-full shrink-0">
+                  <div
+                    className="w-full h-full rounded-full"
+                    style={{ background: holdingsGradient }}
+                  />
+                  <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
 
-                    {topHoldings.map((item, index) => {
-                      const angle =
-                        topHoldings
-                          .slice(0, index)
-                          .reduce(
-                            (sum, holding) => sum + Number(holding.weightPercent || 0),
-                            0
-                          ) +
-                        Number(item.weightPercent || 0) / 2;
+                  {topHoldings.map((item, index) => {
+                    const angle =
+                      topHoldings
+                        .slice(0, index)
+                        .reduce(
+                          (sum, holding) => sum + Number(holding.weightPercent || 0),
+                          0
+                        ) +
+                      Number(item.weightPercent || 0) / 2;
 
-                      const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
-                      const radius = 158;
-                      const x = 125 + Math.cos(radians) * radius;
-                      const y = 125 + Math.sin(radians) * radius;
+                    const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
+                    const radius = 158;
+                    const x = 125 + Math.cos(radians) * radius;
+                    const y = 125 + Math.sin(radians) * radius;
 
-                      return (
-                        <div
-                          key={item.id || item.ticker}
-                          className="absolute text-[11px] font-semibold whitespace-nowrap"
-                          style={{
-                            left: `${x}px`,
-                            top: `${y}px`,
-                            transform: "translate(-50%, -50%)",
-                            color: HOLDING_COLORS[index % HOLDING_COLORS.length],
-                          }}
-                        >
-                          {item.ticker} {formatCompactPercent(item.weightPercent)}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                </>
+                    return (
+                      <div
+                        key={item.id || item.ticker}
+                        className="absolute text-[11px] font-semibold whitespace-nowrap"
+                        style={{
+                          left: `${x}px`,
+                          top: `${y}px`,
+                          transform: "translate(-50%, -50%)",
+                          color: HOLDING_COLORS[index % HOLDING_COLORS.length],
+                        }}
+                      >
+                        {item.ticker} {formatCompactPercent(item.weightPercent)}
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
                 <div className="relative w-[250px] h-[250px] rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center">
                   <div className="absolute inset-[67px] rounded-full bg-white border border-[#e2e8f0]" />
@@ -482,25 +506,25 @@ const topHoldings = useMemo(
                       ]
                   ).map((item) => (
                     <div
-  key={item.type}
-  className="flex items-center justify-between gap-3 min-w-[160px]"
->
-  <div className="flex items-center gap-2.5">
-    <span
-      className="w-3.5 h-3.5 rounded-sm"
-      style={{
-        backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
-      }}
-    />
-    <span className="text-[13px] text-[#3a4560] font-medium">
-      {item.type}
-    </span>
-  </div>
+                      key={item.type}
+                      className="flex items-center justify-between gap-3 min-w-[160px]"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="w-3.5 h-3.5 rounded-sm"
+                          style={{
+                            backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
+                          }}
+                        />
+                        <span className="text-[13px] text-[#3a4560] font-medium">
+                          {item.type}
+                        </span>
+                      </div>
 
-  <span className="text-[13px] font-semibold text-[#2f3a56]">
-    {formatCompactPercent(item.percent)}
-  </span>
-</div>
+                      <span className="text-[13px] font-semibold text-[#2f3a56]">
+                        {formatCompactPercent(item.percent)}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -512,108 +536,144 @@ const topHoldings = useMemo(
         <div className="grid grid-cols-1 xl:grid-cols-[0.72fr_1.28fr] gap-4 mt-4">
           {/* LEFT SIDE */}
           <div className="flex flex-col gap-4">
-<div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-  <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-    Ganancia/Pérdida
-  </h3>
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+                Ganancia/Pérdida
+              </h3>
 
-  <div className="overflow-hidden rounded-xl border border-[#edf1f7]">
-    <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb]">
-      <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
-        Ganancia/Pérdida (sin realizar)
-      </div>
-      <div
-        className="px-3 py-2 text-[13px] font-bold"
-        style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
-      >
-        {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
-      </div>
-    </div>
-  </div>
-</div>
-
-         <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-  <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-    Sectores
-  </h3>
-
-  <div className="flex items-center justify-center gap-6 min-h-[160px]">
-    <div className="relative w-[118px] h-[118px] shrink-0">
-      <div
-        className="w-full h-full rounded-full"
-        style={{ background: sectorGradient }}
-      />
-      <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
-        <span className="text-[12px] font-semibold text-[#94a3b8]">
-          {sectors.length ? formatCompactPercent(sectors[0].percent) : "0%"}
-        </span>
-      </div>
-    </div>
-
-    <div className="space-y-3 min-w-[160px]">
-      {sectors.length ? (
-        sectors.map((sector, index) => (
-          <div
-            key={sector.name || sector.sector || `sector-${index}`}
-            className="flex items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="w-3.5 h-3.5 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SECTOR_COLORS[index % SECTOR_COLORS.length],
-                }}
-              />
-              <span className="text-[13px] text-[#3a4560] font-medium">
-                {sector.name || sector.sector}
-              </span>
+              <div className="overflow-hidden rounded-xl border border-[#edf1f7]">
+                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb]">
+                  <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
+                    Ganancia/Pérdida (sin realizar)
+                  </div>
+                  <div
+                    className="px-3 py-2 text-[13px] font-bold"
+                    style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
+                  >
+                    {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <span className="text-[13px] font-semibold text-[#2f3a56]">
-              {formatCompactPercent(sector.percent)}
-            </span>
-          </div>
-        ))
-      ) : (
-        <div className="text-[13px] font-medium text-[#94a3b8]">
-          Sin sectores
-        </div>
-      )}
-    </div>
-  </div>
-</div>
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+                Sectores
+              </h3>
 
+              <div className="flex items-center justify-center gap-6 min-h-[160px]">
+                <div className="relative w-[118px] h-[118px] shrink-0">
+                  <div
+                    className="w-full h-full rounded-full"
+                    style={{ background: sectorGradient }}
+                  />
+                  <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
+                    <span className="text-[12px] font-semibold text-[#94a3b8]">
+                      {sectors.length ? formatCompactPercent(sectors[0].percent) : "0%"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 min-w-[160px]">
+                  {sectors.length ? (
+                    sectors.map((sector, index) => (
+                      <div
+                        key={sector.name || sector.sector || `sector-${index}`}
+                        className="flex items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full shrink-0"
+                            style={{
+                              backgroundColor:
+                                SECTOR_COLORS[index % SECTOR_COLORS.length],
+                            }}
+                          />
+                          <span className="text-[13px] text-[#3a4560] font-medium">
+                            {sector.name || sector.sector}
+                          </span>
+                        </div>
+
+                        <span className="text-[13px] font-semibold text-[#2f3a56]">
+                          {formatCompactPercent(sector.percent)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-[13px] font-medium text-[#94a3b8]">
+                      Sin sectores
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-            <h3 className="text-[15px] font-bold text-[#2f3a56] mb-4">
-              Historial Del Portafolio
-            </h3>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+                Concentración del Portfolio
+              </h3>
 
-            <div className="h-[260px] rounded-xl bg-[#fbfcff] border border-[#edf1f7] px-4 py-4">
-              <div className="w-full h-full relative">
-                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                  <div className="border-t border-[#eef2f7]" />
-                  <div className="border-t border-[#eef2f7]" />
-                  <div className="border-t border-[#eef2f7]" />
-                  <div className="border-t border-[#eef2f7]" />
-                  <div className="border-t border-[#eef2f7]" />
-                </div>
-
-                <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[11px] text-[#7c89a3]">
-                  <span>$0</span>
-                  <span>$0</span>
-                  <span>$0</span>
-                  <span>$0</span>
-                  <span>$0</span>
-                </div>
-
-                <div className="absolute left-[52px] right-0 top-0 bottom-0 flex items-center justify-center">
-                  <span className="text-[13px] font-medium text-[#94a3b8]">
-                    Sin historial
+              <div className="space-y-2">
+                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    Top 1 posición
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatCompactPercent(concentration.top1)}
                   </span>
                 </div>
+
+                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    Top 3 posiciones
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatCompactPercent(concentration.top3)}
+                  </span>
+                </div>
+
+                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
+                  <span className="text-[13px] text-[#3a4560] font-medium">
+                    Top 5 posiciones
+                  </span>
+                  <span className="text-[13px] font-bold text-[#24304a]">
+                    {formatCompactPercent(concentration.top5)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+                Top Ganadoras
+              </h3>
+
+              <div className="space-y-2">
+                {topGainers.length ? (
+                  topGainers.map((position) => (
+                    <div
+                      key={position.id || position.ticker}
+                      className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                    >
+                      <span className="text-[13px] text-[#3a4560] font-medium">
+                        {position.ticker}
+                      </span>
+                      <span
+                        className="text-[13px] font-bold"
+                        style={{ color: getAmountColor(position.unrealizedGain) }}
+                      >
+                        {formatMoney(position.unrealizedGain, generalData.currency)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                    Sin posiciones
+                  </div>
+                )}
               </div>
             </div>
           </div>
