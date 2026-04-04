@@ -640,7 +640,7 @@ const DashboardPage = () => {
 
           {/* RIGHT SIDE */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[380px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Concentración del Portfolio
               </h3>
@@ -670,7 +670,7 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[380px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Top Ganadoras
               </h3>
