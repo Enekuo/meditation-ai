@@ -130,6 +130,28 @@ const buildHoldingsGradient = (items) => {
   return `conic-gradient(${stops.join(",")})`;
 };
 
+const getPositionMarketValue = (position) => {
+  const directValue =
+    position?.marketValue ??
+    position?.currentValue ??
+    position?.positionValue ??
+    position?.totalValue ??
+    position?.value;
+
+  if (Number.isFinite(Number(directValue))) {
+    return Number(directValue);
+  }
+
+  const shares = Number(
+    position?.shares ?? position?.quantity ?? position?.amount ?? 0
+  );
+  const currentPrice = Number(
+    position?.currentPrice ?? position?.price ?? position?.marketPrice ?? 0
+  );
+
+  return shares * currentPrice;
+};
+
 const DashboardPage = () => {
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
@@ -184,30 +206,35 @@ const DashboardPage = () => {
     [positions, generalData.currency]
   );
 
-  const concentration = useMemo(() => {
-    const sorted = [...topHoldings].sort(
-      (a, b) => Number(b.weightPercent || 0) - Number(a.weightPercent || 0)
+  const concentrationRows = useMemo(() => {
+    const normalized = positions.map((position) =>
+      normalizePosition(position, generalData.currency)
     );
 
-    const sum = (n) =>
-      sorted
-        .slice(0, n)
-        .reduce((acc, item) => acc + Number(item.weightPercent || 0), 0);
+    const investedTotal = Number(totals.positionsValueTotal || 0);
 
-    return {
-      top1: sum(1),
-      top3: sum(3),
-      top5: sum(5),
-    };
-  }, [topHoldings]);
+    return normalized
+      .map((position) => {
+        const marketValue = getPositionMarketValue(position);
+        const weightPercent =
+          investedTotal > 0 ? (marketValue / investedTotal) * 100 : 0;
+
+        return {
+          ...position,
+          weightPercent,
+        };
+      })
+      .sort(
+        (a, b) => Number(b.weightPercent || 0) - Number(a.weightPercent || 0)
+      );
+  }, [positions, generalData.currency, totals.positionsValueTotal]);
 
   const topGainers = useMemo(() => {
     return positions
       .map((position) => normalizePosition(position, generalData.currency))
       .sort(
         (a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0)
-      )
-      .slice(0, 3);
+      );
   }, [positions, generalData.currency]);
 
   const hasPositions = positions.length > 0;
@@ -617,32 +644,25 @@ const DashboardPage = () => {
               </h3>
 
               <div className="space-y-2">
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    Top 1 posición
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatCompactPercent(concentration.top1)}
-                  </span>
-                </div>
-
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    Top 3 posiciones
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatCompactPercent(concentration.top3)}
-                  </span>
-                </div>
-
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    Top 5 posiciones
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatCompactPercent(concentration.top5)}
-                  </span>
-                </div>
+                {concentrationRows.length ? (
+                  concentrationRows.map((position) => (
+                    <div
+                      key={position.id || position.ticker}
+                      className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                    >
+                      <span className="text-[13px] text-[#3a4560] font-medium">
+                        {position.ticker}
+                      </span>
+                      <span className="text-[13px] font-bold text-[#24304a]">
+                        {formatCompactPercent(position.weightPercent)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                    Sin posiciones
+                  </div>
+                )}
               </div>
             </div>
 
