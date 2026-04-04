@@ -273,8 +273,16 @@ const DashboardPage = () => {
               <p className="text-[13px] font-semibold text-[#3b455e] mb-2">
                 Valor Actual
               </p>
-              <h2 className="text-[28px] leading-none font-bold text-[#202b45]">
-                {formatMoney(totals.portfolioValue, generalData.currency)}
+              <h2 className="text-[28px] leading-none font-bold text-[#202b45] flex items-end gap-2">
+                <span className="text-[16px] font-semibold text-[#6b7280]">
+                  {generalData.currency}
+                </span>
+                <span>
+                  {Number(totals.portfolioValue || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </h2>
             </div>
 
@@ -285,7 +293,7 @@ const DashboardPage = () => {
                 </div>
                 <div>
                   <p className="text-[13px] font-semibold text-[#3b455e]">
-                    Efectivo
+                    Efectivo liquidado
                   </p>
                 </div>
               </div>
@@ -293,10 +301,6 @@ const DashboardPage = () => {
               <div className="text-right">
                 <p className="text-[14px] font-bold text-[#2c3651]">
                   {formatMoney(totals.cash, generalData.currency)}
-                </p>
-                <p className="text-[11px] font-semibold text-[#94a3b8]">
-                  {formatMoney(totals.cash, generalData.currency)} (
-                  {formatPercent(totals.cashWeight)})
                 </p>
               </div>
             </div>
@@ -318,11 +322,6 @@ const DashboardPage = () => {
               <div className="text-right">
                 <p className="text-[14px] font-bold text-[#2c3651]">
                   {formatMoney(totals.positionsValueTotal, generalData.currency)}
-                </p>
-                <p className="text-[11px] font-semibold text-[#94a3b8] leading-[1.2]">
-                  {formatMoney(totals.positionsValueTotal, generalData.currency)}
-                  <br />
-                  ({formatPercent(totals.investedWeight)})
                 </p>
               </div>
             </div>
@@ -640,7 +639,7 @@ const DashboardPage = () => {
 
           {/* RIGHT SIDE */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[380px] flex flex-col">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Concentración del Portfolio
               </h3>
@@ -670,7 +669,7 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[380px] flex flex-col">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Top Ganadoras
               </h3>
