@@ -207,9 +207,15 @@ const DashboardPage = () => {
   );
 
   const concentrationRows = useMemo(() => {
-    const normalized = positions.map((position) =>
-      normalizePosition(position, generalData.currency)
-    );
+    const normalized = positions.map((position) => {
+      const normalizedPosition = normalizePosition(position, generalData.currency);
+
+      return {
+        ...normalizedPosition,
+        currency:
+          position.currency || normalizedPosition.currency || generalData.currency,
+      };
+    });
 
     const investedTotal = Number(totals.positionsValueTotal || 0);
 
@@ -231,7 +237,14 @@ const DashboardPage = () => {
 
   const topGainers = useMemo(() => {
     return positions
-      .map((position) => normalizePosition(position, generalData.currency))
+      .map((position) => {
+        const normalized = normalizePosition(position, generalData.currency);
+
+        return {
+          ...normalized,
+          currency: position.currency || normalized.currency || generalData.currency,
+        };
+      })
       .sort(
         (a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0)
       );
@@ -674,36 +687,35 @@ const DashboardPage = () => {
                 Top Ganadoras
               </h3>
 
-<div className="flex-1 min-h-0 overflow-y-auto pr-1">
-  <div className="space-y-2">
-    {topGainers.length ? (
-      topGainers.map((position) => (
-        <div
-          key={position.id || position.ticker}
-          className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
-        >
-          <span className="text-[13px] text-[#3a4560] font-medium">
-            {position.ticker}
-          </span>
-          <span
-            className="text-[13px] font-bold"
-            style={{ color: getAmountColor(position.unrealizedGain) }}
-          >
-            {formatMoney(
-              position.unrealizedGain,
-              position.currency || generalData.currency
-            )}
-          </span>
-        </div>
-      ))
-    ) : (
-      <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
-        Sin posiciones
-      </div>
-    )}
-  </div>
-</div>
-
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  {topGainers.length ? (
+                    topGainers.map((position) => (
+                      <div
+                        key={position.id || position.ticker}
+                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                      >
+                        <span className="text-[13px] text-[#3a4560] font-medium">
+                          {position.ticker}
+                        </span>
+                        <span
+                          className="text-[13px] font-bold"
+                          style={{ color: getAmountColor(position.unrealizedGain) }}
+                        >
+                          {formatMoney(
+                            position.unrealizedGain,
+                            position.currency || generalData.currency
+                          )}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                      Sin posiciones
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
