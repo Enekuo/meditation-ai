@@ -3,11 +3,66 @@ import React, { useMemo, useState, useEffect } from "react";
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";
 
+const baseCurrencyOptions = [
+  "AUD",
+  "CAD",
+  "CHF",
+  "CZK",
+  "DKK",
+  "EUR",
+  "GBP",
+  "HKD",
+  "HUF",
+  "JPY",
+  "MXN",
+  "NOK",
+  "NZD",
+  "SEK",
+  "SGD",
+  "USD",
+];
+
+const quoteCurrencyOptions = [
+  "USD",
+  "AED",
+  "AUD",
+  "BRL",
+  "CAD",
+  "CHF",
+  "CNH",
+  "CZK",
+  "DKK",
+  "EUR",
+  "GBP",
+  "HKD",
+  "HUF",
+  "ILS",
+  "JPY",
+  "KRW",
+  "MXN",
+  "MYR",
+  "NOK",
+  "NZD",
+  "PLN",
+  "RON",
+  "SAR",
+  "SEK",
+  "SGD",
+  "TRY",
+  "TWD",
+  "ZAR",
+];
+
+const quoteUnitOptions = [
+  { value: "NORMAL", label: "Normal" },
+  { value: "GBX", label: "GBX (peniques UK)" },
+];
+
 const emptyGeneralData = {
   cash: "",
   benchmark: "S&P500",
   benchmarkReturn: "10",
-  currency: "USD",
+  currency: "EUR",
   taxDividends: "0",
   taxGains: "0",
 };
@@ -15,6 +70,8 @@ const emptyGeneralData = {
 const emptyPositionForm = {
   ticker: "",
   price: "",
+  quoteCurrency: "EUR",
+  quoteUnit: "NORMAL",
   sector: "",
   type: "",
   shares: "",
@@ -24,7 +81,6 @@ const emptyPositionForm = {
 };
 
 const benchmarkOptions = ["S&P500", "Nasdaq 100", "MSCI World", "IBEX 35"];
-const currencyOptions = ["USD", "EUR"];
 const sectorOptions = [
   "Tecnología",
   "Salud",
@@ -71,7 +127,8 @@ const PortfolioInputPage = () => {
   const totalPositions = positions.length;
 
   const formattedCashPreview = useMemo(() => {
-    const value = Number(generalData.cash || 0);
+    const rawValue = String(generalData.cash || "").replace(",", ".");
+    const value = Number(rawValue || 0);
     return `${generalData.currency} ${value.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -112,6 +169,8 @@ const PortfolioInputPage = () => {
     if (
       !formData.ticker.trim() ||
       !formData.price ||
+      !formData.quoteCurrency ||
+      !formData.quoteUnit ||
       !formData.sector ||
       !formData.type ||
       !formData.shares ||
@@ -123,10 +182,10 @@ const PortfolioInputPage = () => {
     }
 
     if (
-      Number(formData.price) < 0 ||
-      Number(formData.shares) < 0 ||
-      Number(formData.avgCost) < 0 ||
-      Number(formData.annualDividend) < 0
+      Number(String(formData.price).replace(",", ".")) < 0 ||
+      Number(String(formData.shares).replace(",", ".")) < 0 ||
+      Number(String(formData.avgCost).replace(",", ".")) < 0 ||
+      Number(String(formData.annualDividend).replace(",", ".")) < 0
     ) {
       return "Los valores numéricos no pueden ser negativos.";
     }
@@ -138,13 +197,15 @@ const PortfolioInputPage = () => {
     return {
       id: editingId || crypto.randomUUID(),
       ticker: formData.ticker.trim().toUpperCase(),
-      price: Number(formData.price),
+      price: Number(String(formData.price).replace(",", ".")),
+      quoteCurrency: formData.quoteCurrency,
+      quoteUnit: formData.quoteUnit,
       sector: formData.sector,
       type: formData.type,
-      shares: Number(formData.shares),
-      avgCost: Number(formData.avgCost),
-      annualDividend: Number(formData.annualDividend),
-      realizedGain: Number(formData.realizedGain),
+      shares: Number(String(formData.shares).replace(",", ".")),
+      avgCost: Number(String(formData.avgCost).replace(",", ".")),
+      annualDividend: Number(String(formData.annualDividend).replace(",", ".")),
+      realizedGain: Number(String(formData.realizedGain).replace(",", ".")),
     };
   };
 
@@ -181,6 +242,8 @@ const PortfolioInputPage = () => {
     setFormData({
       ticker: position.ticker,
       price: String(position.price),
+      quoteCurrency: position.quoteCurrency || "EUR",
+      quoteUnit: position.quoteUnit || "NORMAL",
       sector: position.sector,
       type: position.type,
       shares: String(position.shares),
@@ -201,8 +264,8 @@ const PortfolioInputPage = () => {
     }
   };
 
-  const formatMoney = (value) => {
-    return `${generalData.currency} ${Number(value || 0).toLocaleString(undefined, {
+  const formatMoney = (value, currency = generalData.currency) => {
+    return `${currency} ${Number(value || 0).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -210,7 +273,7 @@ const PortfolioInputPage = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
-      <div className="max-w-[1160px] mx-auto px-4 pt-0 pb-3 -mt-12">
+      <div className="max-w-[1280px] mx-auto px-4 pt-0 pb-3 -mt-12">
         <div className="mb-4">
           <div className="w-9 h-1 rounded-full bg-blue-500 mb-2" />
           <h1 className="text-[20px] leading-none font-bold text-[#24375d]">
@@ -241,7 +304,7 @@ const PortfolioInputPage = () => {
                     Efectivo Disponible
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="cash"
                     value={generalData.cash}
                     onChange={handleGeneralChange}
@@ -273,7 +336,7 @@ const PortfolioInputPage = () => {
                     Retorno Benchmark (%)
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="benchmarkReturn"
                     value={generalData.benchmarkReturn}
                     onChange={handleGeneralChange}
@@ -294,7 +357,7 @@ const PortfolioInputPage = () => {
                     onChange={handleGeneralChange}
                     className="w-full h-[40px] rounded-lg border border-[#d9e2f1] px-3 text-[14px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
                   >
-                    {currencyOptions.map((option) => (
+                    {baseCurrencyOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
@@ -307,7 +370,7 @@ const PortfolioInputPage = () => {
                     Impuestos Dividendos (%)
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="taxDividends"
                     value={generalData.taxDividends}
                     onChange={handleGeneralChange}
@@ -321,7 +384,7 @@ const PortfolioInputPage = () => {
                     Impuestos Ganancias (%)
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="taxGains"
                     value={generalData.taxGains}
                     onChange={handleGeneralChange}
@@ -362,7 +425,7 @@ const PortfolioInputPage = () => {
           </div>
 
           <div className="px-4 py-4">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 mb-3">
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-3">
               <div>
                 <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
                   Ticker
@@ -382,13 +445,49 @@ const PortfolioInputPage = () => {
                   Precio Actual
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="price"
                   value={formData.price}
                   onChange={handlePositionChange}
                   placeholder="180.00"
                   className="w-full h-[38px] rounded-lg border border-[#d9e2f1] px-3 text-[13px] text-[#24375d] outline-none focus:border-blue-400"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                  Moneda Cotización
+                </label>
+                <select
+                  name="quoteCurrency"
+                  value={formData.quoteCurrency}
+                  onChange={handlePositionChange}
+                  className="w-full h-[38px] rounded-lg border border-[#d9e2f1] px-3 text-[13px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                >
+                  {quoteCurrencyOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+                  Unidad
+                </label>
+                <select
+                  name="quoteUnit"
+                  value={formData.quoteUnit}
+                  onChange={handlePositionChange}
+                  className="w-full h-[38px] rounded-lg border border-[#d9e2f1] px-3 text-[13px] text-[#24375d] outline-none focus:border-blue-400 bg-white"
+                >
+                  {quoteUnitOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -409,7 +508,9 @@ const PortfolioInputPage = () => {
                   ))}
                 </select>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-3">
               <div>
                 <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
                   Tipo de Inversión
@@ -428,15 +529,13 @@ const PortfolioInputPage = () => {
                   ))}
                 </select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr_1fr_1fr_auto_auto] gap-3 items-end">
               <div>
                 <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
                   Cantidad de Acciones
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="shares"
                   value={formData.shares}
                   onChange={handlePositionChange}
@@ -450,7 +549,7 @@ const PortfolioInputPage = () => {
                   Costo Promedio
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="avgCost"
                   value={formData.avgCost}
                   onChange={handlePositionChange}
@@ -464,7 +563,7 @@ const PortfolioInputPage = () => {
                   Dividendo Anual
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="annualDividend"
                   value={formData.annualDividend}
                   onChange={handlePositionChange}
@@ -478,7 +577,7 @@ const PortfolioInputPage = () => {
                   Ganancia Realizada
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="realizedGain"
                   value={formData.realizedGain}
                   onChange={handlePositionChange}
@@ -486,7 +585,9 @@ const PortfolioInputPage = () => {
                   className="w-full h-[38px] rounded-lg border border-[#d9e2f1] px-3 text-[13px] text-[#24375d] outline-none focus:border-blue-400"
                 />
               </div>
+            </div>
 
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={handleAddOrUpdatePosition}
@@ -525,7 +626,7 @@ const PortfolioInputPage = () => {
             </div>
 
             <div className="overflow-x-auto rounded-[14px] border border-[#e7ebf3]">
-              <table className="w-full min-w-[1020px] border-collapse">
+              <table className="w-full min-w-[1300px] border-collapse">
                 <thead className="bg-[#f5f8ff]">
                   <tr>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
@@ -533,6 +634,12 @@ const PortfolioInputPage = () => {
                     </th>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Precio Actual
+                    </th>
+                    <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                      Moneda
+                    </th>
+                    <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
+                      Unidad
                     </th>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Sector
@@ -562,7 +669,7 @@ const PortfolioInputPage = () => {
                   {positions.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={11}
                         className="px-3 py-6 text-center text-[12px] font-medium text-[#94a3b8]"
                       >
                         Todavía no has añadido ninguna posición.
@@ -575,7 +682,13 @@ const PortfolioInputPage = () => {
                           {position.ticker}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                          {formatMoney(position.price)}
+                          {formatMoney(position.price, position.quoteCurrency)}
+                        </td>
+                        <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
+                          {position.quoteCurrency}
+                        </td>
+                        <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
+                          {position.quoteUnit}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.sector}
@@ -587,13 +700,13 @@ const PortfolioInputPage = () => {
                           {position.shares}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                          {formatMoney(position.avgCost)}
+                          {formatMoney(position.avgCost, position.quoteCurrency)}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                          {formatMoney(position.annualDividend)}
+                          {formatMoney(position.annualDividend, position.quoteCurrency)}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                          {formatMoney(position.realizedGain)}
+                          {formatMoney(position.realizedGain, generalData.currency)}
                         </td>
                         <td className="px-3 py-2.5 border-b border-[#edf1f7]">
                           <div className="flex items-center gap-2">
