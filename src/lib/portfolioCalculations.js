@@ -1,198 +1,318 @@
-export function toNumber(value) {
+const FX_RATES_TO_EUR = {
+  EUR: 1,
+  USD: 0.93,
+  GBP: 1.17,
+  AUD: 0.61,
+  CAD: 0.68,
+  CHF: 1.04,
+  CZK: 0.040,
+  DKK: 0.134,
+  HKD: 0.119,
+  HUF: 0.0025,
+  JPY: 0.0062,
+  MXN: 0.050,
+  NOK: 0.085,
+  NZD: 0.56,
+  SEK: 0.089,
+  SGD: 0.69,
+  AED: 0.253,
+  BRL: 0.17,
+  CNH: 0.128,
+  ILS: 0.25,
+  KRW: 0.00068,
+  MYR: 0.20,
+  PLN: 0.23,
+  RON: 0.20,
+  SAR: 0.248,
+  TRY: 0.027,
+  TWD: 0.029,
+  ZAR: 0.051,
+};
+
+const normalizeNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 0;
+
+  if (typeof value === "string") {
+    const cleaned = value.replace(",", ".");
+    const num = Number(cleaned);
+    return Number.isFinite(num) ? num : 0;
+  }
+
   const num = Number(value);
   return Number.isFinite(num) ? num : 0;
-}
+};
 
-export function roundToTwo(value) {
-  return Math.round((toNumber(value) + Number.EPSILON) * 100) / 100;
-}
+const normalizeQuotedValue = (value, quoteUnit = "NORMAL") => {
+  const num = normalizeNumber(value);
 
-export function calculatePositionValue(position) {
-  return roundToTwo(toNumber(position.price) * toNumber(position.shares));
-}
+  if (quoteUnit === "GBX") {
+    return num / 100;
+  }
 
-export function calculatePositionInvested(position) {
-  return roundToTwo(toNumber(position.avgCost) * toNumber(position.shares));
-}
+  return num;
+};
 
-export function calculatePositionUnrealizedGain(position) {
-  return roundToTwo(
-    calculatePositionValue(position) - calculatePositionInvested(position)
-  );
-}
+const getFxRateToEUR = (currency = "EUR") => {
+  return FX_RATES_TO_EUR[currency] || 1;
+};
 
-export function calculatePositionRealizedGain(position) {
-  return roundToTwo(toNumber(position.realizedGain));
-}
+const convertCurrency = (value, fromCurrency = "EUR", toCurrency = "EUR") => {
+  const amount = normalizeNumber(value);
 
-export function calculatePositionTotalGain(position) {
-  return roundToTwo(
-    calculatePositionUnrealizedGain(position) + calculatePositionRealizedGain(position)
-  );
-}
+  if (fromCurrency === toCurrency) return amount;
 
-export function calculatePositionAnnualDividend(position) {
-  return roundToTwo(toNumber(position.annualDividend) * toNumber(position.shares));
-}
+  const fromRateToEUR = getFxRateToEUR(fromCurrency);
+  const toRateToEUR = getFxRateToEUR(toCurrency);
 
-export function calculatePositionReturnPercent(position) {
-  const invested = calculatePositionInvested(position);
-  if (invested <= 0) return 0;
-  return roundToTwo((calculatePositionUnrealizedGain(position) / invested) * 100);
-}
+  const valueInEUR = amount * fromRateToEUR;
+  return valueInEUR / toRateToEUR;
+};
 
-export function calculateEnrichedPositions(positions = []) {
-  return positions.map((position) => {
-    const value = calculatePositionValue(position);
-    const invested = calculatePositionInvested(position);
-    const unrealizedGain = calculatePositionUnrealizedGain(position);
-    const realizedGain = calculatePositionRealizedGain(position);
-    const totalGain = calculatePositionTotalGain(position);
-    const annualDividendTotal = calculatePositionAnnualDividend(position);
-    const returnPercent = calculatePositionReturnPercent(position);
-
-    return {
-      ...position,
-      value,
-      invested,
-      unrealizedGain,
-      realizedGain,
-      totalGain,
-      annualDividendTotal,
-      returnPercent,
-    };
-  });
-}
-
-export function calculatePortfolioTotals(generalData = {}, positions = []) {
-  const cash = toNumber(generalData.cash);
-  const benchmarkReturn = toNumber(generalData.benchmarkReturn);
-  const taxDividends = toNumber(generalData.taxDividends);
-  const taxGains = toNumber(generalData.taxGains);
-
-  const enrichedPositions = calculateEnrichedPositions(positions);
-
-  const investedTotal = roundToTwo(
-    enrichedPositions.reduce((sum, position) => sum + position.invested, 0)
+const getPositionPriceInBase = (position, baseCurrency) => {
+  const normalizedPrice = normalizeQuotedValue(
+    position.price,
+    position.quoteUnit || "NORMAL"
   );
 
-  const positionsValueTotal = roundToTwo(
-    enrichedPositions.reduce((sum, position) => sum + position.value, 0)
+  return convertCurrency(
+    normalizedPrice,
+    position.quoteCurrency || baseCurrency,
+    baseCurrency
+  );
+};
+
+const getPositionAvgCostInBase = (position, baseCurrency) => {
+  const normalizedAvgCost = normalizeQuotedValue(
+    position.avgCost,
+    position.quoteUnit || "NORMAL"
   );
 
-  const portfolioValue = roundToTwo(cash + positionsValueTotal);
+  return convertCurrency(
+    normalizedAvgCost,
+    position.quoteCurrency || baseCurrency,
+    baseCurrency
+  );
+};
 
-  const unrealizedGainTotal = roundToTwo(
-    enrichedPositions.reduce((sum, position) => sum + position.unrealizedGain, 0)
+const getPositionDividendPerShareInBase = (position, baseCurrency) => {
+  const normalizedDividend = normalizeQuotedValue(
+    position.annualDividend,
+    position.quoteUnit || "NORMAL"
   );
 
-  const realizedGainTotal = roundToTwo(
-    enrichedPositions.reduce((sum, position) => sum + position.realizedGain, 0)
+  return convertCurrency(
+    normalizedDividend,
+    position.quoteCurrency || baseCurrency,
+    baseCurrency
+  );
+};
+
+const normalizePosition = (position, baseCurrency) => {
+  const shares = normalizeNumber(position.shares);
+  const currentPriceInBase = getPositionPriceInBase(position, baseCurrency);
+  const avgCostInBase = getPositionAvgCostInBase(position, baseCurrency);
+  const annualDividendPerShareInBase = getPositionDividendPerShareInBase(
+    position,
+    baseCurrency
   );
 
-  const totalGain = roundToTwo(unrealizedGainTotal + realizedGainTotal);
-
-  const annualDividendsTotal = roundToTwo(
-    enrichedPositions.reduce((sum, position) => sum + position.annualDividendTotal, 0)
-  );
-
-  const cashWeight = portfolioValue > 0 ? roundToTwo((cash / portfolioValue) * 100) : 0;
-  const investedWeight =
-    portfolioValue > 0 ? roundToTwo((positionsValueTotal / portfolioValue) * 100) : 0;
-
-  const yieldPercent =
-    portfolioValue > 0 ? roundToTwo((annualDividendsTotal / portfolioValue) * 100) : 0;
-
-  const portfolioReturnPercent =
-    investedTotal > 0 ? roundToTwo((unrealizedGainTotal / investedTotal) * 100) : 0;
-
-  const benchmarkDifference = roundToTwo(portfolioReturnPercent - benchmarkReturn);
-
-  const taxesOnDividends = roundToTwo((annualDividendsTotal * taxDividends) / 100);
-
-  const taxableGainsBase = totalGain > 0 ? totalGain : 0;
-  const taxesOnGains = roundToTwo((taxableGainsBase * taxGains) / 100);
-
-  const positionsCount = enrichedPositions.length;
-
-  const weightedPositions = enrichedPositions.map((position) => ({
-    ...position,
-    weightPercent:
-      portfolioValue > 0 ? roundToTwo((position.value / portfolioValue) * 100) : 0,
-  }));
+  const marketValue = currentPriceInBase * shares;
+  const costBasis = avgCostInBase * shares;
+  const unrealizedGain = marketValue - costBasis;
 
   return {
-    cash: roundToTwo(cash),
-    benchmarkReturn,
-    taxDividends,
-    taxGains,
-    investedTotal,
-    positionsValueTotal,
+    ...position,
+    ticker: position.ticker || "N/A",
+    sector: position.sector || "Sin sector",
+    type: position.type || "Sin tipo",
+    shares,
+    currentPriceInBase,
+    avgCostInBase,
+    annualDividendPerShareInBase,
+    marketValue,
+    costBasis,
+    unrealizedGain,
+    realizedGain: normalizeNumber(position.realizedGain || 0),
+  };
+};
+
+const buildDistribution = (items, labelKey) => {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+
+  if (!total) return [];
+
+  return items
+    .map((item) => ({
+      [labelKey]: item[labelKey],
+      value: item.value,
+      percent: (item.value / total) * 100,
+    }))
+    .sort((a, b) => b.value - a.value);
+};
+
+export const calculatePortfolioTotals = (generalData = {}, positions = []) => {
+  const baseCurrency = generalData.currency || "EUR";
+  const cash = normalizeNumber(generalData.cash || 0);
+  const benchmarkReturn = normalizeNumber(generalData.benchmarkReturn || 0);
+
+  const normalizedPositions = positions.map((position) =>
+    normalizePosition(position, baseCurrency)
+  );
+
+  const positionsValueTotal = normalizedPositions.reduce(
+    (sum, position) => sum + position.marketValue,
+    0
+  );
+
+  const annualDividendsTotal = normalizedPositions.reduce(
+    (sum, position) =>
+      sum + position.annualDividendPerShareInBase * position.shares,
+    0
+  );
+
+  const unrealizedGainTotal = normalizedPositions.reduce(
+    (sum, position) => sum + position.unrealizedGain,
+    0
+  );
+
+  const realizedGainTotal = normalizedPositions.reduce(
+    (sum, position) => sum + position.realizedGain,
+    0
+  );
+
+  const totalGain = unrealizedGainTotal + realizedGainTotal;
+  const portfolioValue = cash + positionsValueTotal;
+  const costBasisTotal = normalizedPositions.reduce(
+    (sum, position) => sum + position.costBasis,
+    0
+  );
+
+  const cashWeight = portfolioValue > 0 ? (cash / portfolioValue) * 100 : 0;
+  const investedWeight =
+    portfolioValue > 0 ? (positionsValueTotal / portfolioValue) * 100 : 0;
+
+  const yieldPercent =
+    positionsValueTotal > 0
+      ? (annualDividendsTotal / positionsValueTotal) * 100
+      : 0;
+
+  const portfolioReturnPercent =
+    costBasisTotal > 0 ? (unrealizedGainTotal / costBasisTotal) * 100 : 0;
+
+  const benchmarkDifference = portfolioReturnPercent - benchmarkReturn;
+
+  return {
+    baseCurrency,
+    cash,
     portfolioValue,
+    positionsValueTotal,
+    annualDividendsTotal,
     unrealizedGainTotal,
     realizedGainTotal,
     totalGain,
-    annualDividendsTotal,
+    costBasisTotal,
+    positionsCount: normalizedPositions.length,
     cashWeight,
     investedWeight,
     yieldPercent,
     portfolioReturnPercent,
+    benchmarkReturn,
     benchmarkDifference,
-    taxesOnDividends,
-    taxesOnGains,
-    positionsCount,
-    positions: weightedPositions,
   };
-}
+};
 
-export function calculateSectorDistribution(positions = []) {
-  const enrichedPositions = calculateEnrichedPositions(positions);
-  const totalValue = enrichedPositions.reduce((sum, position) => sum + position.value, 0);
+export const calculateSectorDistribution = (positions = [], baseCurrency = "EUR") => {
+  const normalizedPositions = positions.map((position) =>
+    normalizePosition(position, baseCurrency)
+  );
 
-  const grouped = enrichedPositions.reduce((acc, position) => {
-    const key = position.sector || "Sin sector";
-    acc[key] = (acc[key] || 0) + position.value;
-    return acc;
-  }, {});
+  const sectorMap = new Map();
 
-  return Object.entries(grouped)
-    .map(([sector, value]) => ({
-      sector,
-      value: roundToTwo(value),
-      percent: totalValue > 0 ? roundToTwo((value / totalValue) * 100) : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
-}
+  normalizedPositions.forEach((position) => {
+    const sector = position.sector || "Sin sector";
+    const previous = sectorMap.get(sector) || 0;
+    sectorMap.set(sector, previous + position.marketValue);
+  });
 
-export function calculateInvestmentTypeDistribution(positions = []) {
-  const enrichedPositions = calculateEnrichedPositions(positions);
-  const totalValue = enrichedPositions.reduce((sum, position) => sum + position.value, 0);
+  const raw = Array.from(sectorMap.entries()).map(([sector, value]) => ({
+    sector,
+    value,
+  }));
 
-  const grouped = enrichedPositions.reduce((acc, position) => {
-    const key = position.type || "Sin tipo";
-    acc[key] = (acc[key] || 0) + position.value;
-    return acc;
-  }, {});
+  return buildDistribution(raw, "sector");
+};
 
-  return Object.entries(grouped)
-    .map(([type, value]) => ({
-      type,
-      value: roundToTwo(value),
-      percent: totalValue > 0 ? roundToTwo((value / totalValue) * 100) : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
-}
+export const calculateInvestmentTypeDistribution = (
+  positions = [],
+  baseCurrency = "EUR"
+) => {
+  const normalizedPositions = positions.map((position) =>
+    normalizePosition(position, baseCurrency)
+  );
 
-export function calculateTopHoldings(positions = [], limit = 10) {
-  const enrichedPositions = calculateEnrichedPositions(positions);
-  const totalValue = enrichedPositions.reduce((sum, position) => sum + position.value, 0);
+  const typeMap = new Map();
 
-  return enrichedPositions
+  normalizedPositions.forEach((position) => {
+    const type = position.type || "Sin tipo";
+    const previous = typeMap.get(type) || 0;
+    typeMap.set(type, previous + position.marketValue);
+  });
+
+  const raw = Array.from(typeMap.entries()).map(([type, value]) => ({
+    type,
+    value,
+  }));
+
+  return buildDistribution(raw, "type");
+};
+
+export const calculateTopHoldings = (
+  positions = [],
+  limit = 10,
+  baseCurrency = "EUR"
+) => {
+  const normalizedPositions = positions
+    .map((position) => normalizePosition(position, baseCurrency))
+    .filter((position) => position.marketValue > 0);
+
+  const total = normalizedPositions.reduce(
+    (sum, position) => sum + position.marketValue,
+    0
+  );
+
+  if (!total) return [];
+
+  return normalizedPositions
+    .sort((a, b) => b.marketValue - a.marketValue)
+    .slice(0, limit)
     .map((position) => ({
-      ...position,
-      weightPercent:
-        totalValue > 0 ? roundToTwo((position.value / totalValue) * 100) : 0,
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, limit);
-}
+      id: position.id,
+      ticker: position.ticker,
+      value: position.marketValue,
+      weightPercent: (position.marketValue / total) * 100,
+    }));
+};
+
+export const calculateDashboardData = (generalData = {}, positions = []) => {
+  const baseCurrency = generalData.currency || "EUR";
+
+  return {
+    totals: calculatePortfolioTotals(generalData, positions),
+    sectors: calculateSectorDistribution(positions, baseCurrency),
+    investmentTypes: calculateInvestmentTypeDistribution(
+      positions,
+      baseCurrency
+    ),
+    topHoldings: calculateTopHoldings(positions, 10, baseCurrency),
+  };
+};
+
+export {
+  normalizeNumber,
+  normalizeQuotedValue,
+  convertCurrency,
+  getPositionPriceInBase,
+  getPositionAvgCostInBase,
+  getPositionDividendPerShareInBase,
+  normalizePosition,
+};

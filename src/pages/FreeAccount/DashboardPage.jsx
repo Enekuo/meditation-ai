@@ -168,20 +168,20 @@ const DashboardPage = () => {
     [generalData, positions]
   );
 
-  const sectors = useMemo(
-    () => calculateSectorDistribution(positions),
-    [positions]
-  );
+const sectors = useMemo(
+  () => calculateSectorDistribution(positions, generalData.currency),
+  [positions, generalData.currency]
+);
 
-  const investmentTypes = useMemo(
-    () => calculateInvestmentTypeDistribution(positions),
-    [positions]
-  );
+const investmentTypes = useMemo(
+  () => calculateInvestmentTypeDistribution(positions, generalData.currency),
+  [positions, generalData.currency]
+);
 
-  const topHoldings = useMemo(
-    () => calculateTopHoldings(positions, 10),
-    [positions]
-  );
+const topHoldings = useMemo(
+  () => calculateTopHoldings(positions, 10, generalData.currency),
+  [positions, generalData.currency]
+);
 
   const hasPositions = positions.length > 0;
 
