@@ -481,17 +481,26 @@ const topHoldings = useMemo(
                         { type: "Dividendos", percent: 0 },
                       ]
                   ).map((item) => (
-                    <div key={item.type} className="flex items-center gap-2.5">
-                      <span
-                        className="w-3.5 h-3.5 rounded-sm"
-                        style={{
-                          backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
-                        }}
-                      />
-                      <span className="text-[13px] text-[#3a4560] font-medium">
-                        {item.type}
-                      </span>
-                    </div>
+                    <div
+  key={item.type}
+  className="flex items-center justify-between gap-3 min-w-[160px]"
+>
+  <div className="flex items-center gap-2.5">
+    <span
+      className="w-3.5 h-3.5 rounded-sm"
+      style={{
+        backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
+      }}
+    />
+    <span className="text-[13px] text-[#3a4560] font-medium">
+      {item.type}
+    </span>
+  </div>
+
+  <span className="text-[13px] font-semibold text-[#2f3a56]">
+    {formatCompactPercent(item.percent)}
+  </span>
+</div>
                   ))}
                 </div>
               </div>
