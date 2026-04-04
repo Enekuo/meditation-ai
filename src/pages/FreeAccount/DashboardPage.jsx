@@ -674,32 +674,36 @@ const DashboardPage = () => {
                 Top Ganadoras
               </h3>
 
-              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                <div className="space-y-2">
-                  {topGainers.length ? (
-                    topGainers.map((position) => (
-                      <div
-                        key={position.id || position.ticker}
-                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
-                      >
-                        <span className="text-[13px] text-[#3a4560] font-medium">
-                          {position.ticker}
-                        </span>
-                        <span
-                          className="text-[13px] font-bold"
-                          style={{ color: getAmountColor(position.unrealizedGain) }}
-                        >
-                          {formatMoney(position.unrealizedGain, generalData.currency)}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
-                      Sin posiciones
-                    </div>
-                  )}
-                </div>
-              </div>
+<div className="flex-1 min-h-0 overflow-y-auto pr-1">
+  <div className="space-y-2">
+    {topGainers.length ? (
+      topGainers.map((position) => (
+        <div
+          key={position.id || position.ticker}
+          className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+        >
+          <span className="text-[13px] text-[#3a4560] font-medium">
+            {position.ticker}
+          </span>
+          <span
+            className="text-[13px] font-bold"
+            style={{ color: getAmountColor(position.unrealizedGain) }}
+          >
+            {formatMoney(
+              position.unrealizedGain,
+              position.currency || generalData.currency
+            )}
+          </span>
+        </div>
+      ))
+    ) : (
+      <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+        Sin posiciones
+      </div>
+    )}
+  </div>
+</div>
+
             </div>
           </div>
         </div>
