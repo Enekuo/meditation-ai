@@ -277,7 +277,7 @@ const DashboardPage = () => {
                 <span className="text-[16px] font-semibold text-[#6b7280]">
                   {generalData.currency}
                 </span>
-                <span>
+                <span className="relative top-[2px]">
                   {Number(totals.portfolioValue || 0).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -286,7 +286,7 @@ const DashboardPage = () => {
               </h2>
             </div>
 
-            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-start justify-between">
+            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#66c38b] flex items-center justify-center text-white text-sm font-bold">
                   $
@@ -305,7 +305,7 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-start justify-between">
+            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#4678df] flex items-center justify-center text-white text-xs font-bold">
                   ▣
