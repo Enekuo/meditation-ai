@@ -583,12 +583,12 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Sectores
               </h3>
 
-              <div className="flex items-center justify-center gap-6 min-h-[160px]">
+              <div className="flex-1 min-h-0 flex items-center justify-center gap-6">
                 <div className="relative w-[118px] h-[118px] shrink-0">
                   <div
                     className="w-full h-full rounded-full"
@@ -601,36 +601,38 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3 min-w-[160px]">
-                  {sectors.length ? (
-                    sectors.map((sector, index) => (
-                      <div
-                        key={sector.name || sector.sector || `sector-${index}`}
-                        className="flex items-center justify-between gap-4"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="w-3.5 h-3.5 rounded-full shrink-0"
-                            style={{
-                              backgroundColor:
-                                SECTOR_COLORS[index % SECTOR_COLORS.length],
-                            }}
-                          />
-                          <span className="text-[13px] text-[#3a4560] font-medium">
-                            {sector.name || sector.sector}
+                <div className="flex-1 min-w-0 h-full overflow-y-auto pr-1">
+                  <div className="space-y-3 min-w-[160px]">
+                    {sectors.length ? (
+                      sectors.map((sector, index) => (
+                        <div
+                          key={sector.name || sector.sector || `sector-${index}`}
+                          className="flex items-center justify-between gap-4"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="w-3.5 h-3.5 rounded-full shrink-0"
+                              style={{
+                                backgroundColor:
+                                  SECTOR_COLORS[index % SECTOR_COLORS.length],
+                              }}
+                            />
+                            <span className="text-[13px] text-[#3a4560] font-medium truncate">
+                              {sector.name || sector.sector}
+                            </span>
+                          </div>
+
+                          <span className="text-[13px] font-semibold text-[#2f3a56] shrink-0">
+                            {formatCompactPercent(sector.percent)}
                           </span>
                         </div>
-
-                        <span className="text-[13px] font-semibold text-[#2f3a56]">
-                          {formatCompactPercent(sector.percent)}
-                        </span>
+                      ))
+                    ) : (
+                      <div className="text-[13px] font-medium text-[#94a3b8]">
+                        Sin sectores
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-[13px] font-medium text-[#94a3b8]">
-                      Sin sectores
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -638,62 +640,66 @@ const DashboardPage = () => {
 
           {/* RIGHT SIDE */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Concentración del Portfolio
               </h3>
 
-              <div className="space-y-2">
-                {concentrationRows.length ? (
-                  concentrationRows.map((position) => (
-                    <div
-                      key={position.id || position.ticker}
-                      className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
-                    >
-                      <span className="text-[13px] text-[#3a4560] font-medium">
-                        {position.ticker}
-                      </span>
-                      <span className="text-[13px] font-bold text-[#24304a]">
-                        {formatCompactPercent(position.weightPercent)}
-                      </span>
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  {concentrationRows.length ? (
+                    concentrationRows.map((position) => (
+                      <div
+                        key={position.id || position.ticker}
+                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                      >
+                        <span className="text-[13px] text-[#3a4560] font-medium">
+                          {position.ticker}
+                        </span>
+                        <span className="text-[13px] font-bold text-[#24304a]">
+                          {formatCompactPercent(position.weightPercent)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                      Sin posiciones
                     </div>
-                  ))
-                ) : (
-                  <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
-                    Sin posiciones
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
+              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
                 Top Ganadoras
               </h3>
 
-              <div className="space-y-2">
-                {topGainers.length ? (
-                  topGainers.map((position) => (
-                    <div
-                      key={position.id || position.ticker}
-                      className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
-                    >
-                      <span className="text-[13px] text-[#3a4560] font-medium">
-                        {position.ticker}
-                      </span>
-                      <span
-                        className="text-[13px] font-bold"
-                        style={{ color: getAmountColor(position.unrealizedGain) }}
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  {topGainers.length ? (
+                    topGainers.map((position) => (
+                      <div
+                        key={position.id || position.ticker}
+                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
                       >
-                        {formatMoney(position.unrealizedGain, generalData.currency)}
-                      </span>
+                        <span className="text-[13px] text-[#3a4560] font-medium">
+                          {position.ticker}
+                        </span>
+                        <span
+                          className="text-[13px] font-bold"
+                          style={{ color: getAmountColor(position.unrealizedGain) }}
+                        >
+                          {formatMoney(position.unrealizedGain, generalData.currency)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                      Sin posiciones
                     </div>
-                  ))
-                ) : (
-                  <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
-                    Sin posiciones
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
