@@ -109,12 +109,44 @@ const getPositionDividendPerShareInBase = (position, baseCurrency) => {
 
 const normalizePosition = (position, baseCurrency) => {
   const shares = normalizeNumber(position.shares);
-  const currentPriceInBase = getPositionPriceInBase(position, baseCurrency);
-  const avgCostInBase = getPositionAvgCostInBase(position, baseCurrency);
-  const annualDividendPerShareInBase = getPositionDividendPerShareInBase(
-    position,
+  const quoteCurrency = position.quoteCurrency || baseCurrency;
+
+  const currentPriceOriginal = normalizeQuotedValue(
+    position.price,
+    position.quoteUnit || "NORMAL"
+  );
+
+  const avgCostOriginal = normalizeQuotedValue(
+    position.avgCost,
+    position.quoteUnit || "NORMAL"
+  );
+
+  const annualDividendPerShareOriginal = normalizeQuotedValue(
+    position.annualDividend,
+    position.quoteUnit || "NORMAL"
+  );
+
+  const currentPriceInBase = convertCurrency(
+    currentPriceOriginal,
+    quoteCurrency,
     baseCurrency
   );
+
+  const avgCostInBase = convertCurrency(
+    avgCostOriginal,
+    quoteCurrency,
+    baseCurrency
+  );
+
+  const annualDividendPerShareInBase = convertCurrency(
+    annualDividendPerShareOriginal,
+    quoteCurrency,
+    baseCurrency
+  );
+
+  const marketValueOriginal = currentPriceOriginal * shares;
+  const costBasisOriginal = avgCostOriginal * shares;
+  const unrealizedGainOriginal = marketValueOriginal - costBasisOriginal;
 
   const marketValue = currentPriceInBase * shares;
   const costBasis = avgCostInBase * shares;
@@ -126,6 +158,14 @@ const normalizePosition = (position, baseCurrency) => {
     sector: position.sector || "Sin sector",
     type: position.type || "Sin tipo",
     shares,
+    currency: quoteCurrency,
+    quoteCurrency,
+    currentPriceOriginal,
+    avgCostOriginal,
+    annualDividendPerShareOriginal,
+    marketValueOriginal,
+    costBasisOriginal,
+    unrealizedGainOriginal,
     currentPriceInBase,
     avgCostInBase,
     annualDividendPerShareInBase,
