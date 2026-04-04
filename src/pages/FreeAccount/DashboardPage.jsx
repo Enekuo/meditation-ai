@@ -512,49 +512,25 @@ const topHoldings = useMemo(
         <div className="grid grid-cols-1 xl:grid-cols-[0.72fr_1.28fr] gap-4 mt-4">
           {/* LEFT SIDE */}
           <div className="flex flex-col gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-                Ganancia/Pérdida
-              </h3>
+<div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
+  <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
+    Ganancia/Pérdida
+  </h3>
 
-              <div className="overflow-hidden rounded-xl border border-[#edf1f7]">
-                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb] border-b border-[#edf1f7]">
-                  <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
-                    Ganancia/Pérdida (sin realizar)
-                  </div>
-                  <div
-                    className="px-3 py-2 text-[13px] font-bold"
-                    style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
-                  >
-                    {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb] border-b border-[#edf1f7]">
-                  <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
-                    Ganancia/Pérdida (realizada)
-                  </div>
-                  <div
-                    className="px-3 py-2 text-[13px] font-bold"
-                    style={{ color: getAmountColor(totals.realizedGainTotal) }}
-                  >
-                    {formatMoney(totals.realizedGainTotal, generalData.currency)}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb]">
-                  <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
-                    Ganancia/Pérdida (TOTAL)
-                  </div>
-                  <div
-                    className="px-3 py-2 text-[13px] font-bold"
-                    style={{ color: getAmountColor(totals.totalGain) }}
-                  >
-                    {formatMoney(totals.totalGain, generalData.currency)}
-                  </div>
-                </div>
-              </div>
-            </div>
+  <div className="overflow-hidden rounded-xl border border-[#edf1f7]">
+    <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb]">
+      <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
+        Ganancia/Pérdida (sin realizar)
+      </div>
+      <div
+        className="px-3 py-2 text-[13px] font-bold"
+        style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
+      >
+        {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
+      </div>
+    </div>
+  </div>
+</div>
 
          <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
   <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
