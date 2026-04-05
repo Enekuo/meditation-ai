@@ -108,6 +108,7 @@ const PortfolioInputPage = () => {
   const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
   const [importText, setImportText] = useState("");
+  
 
   useEffect(() => {
     const savedGeneral = localStorage.getItem(GENERAL_STORAGE_KEY);
@@ -257,6 +258,8 @@ const PortfolioInputPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const formattedImportPreview = importText.replace(/\t/g, "    ");
+
   const handleDeletePosition = (id) => {
     const updated = positions.filter((position) => position.id !== id);
     persistPositions(updated);
@@ -289,48 +292,67 @@ const PortfolioInputPage = () => {
             onClick={() => setIsImportSectionOpen((prev) => !prev)}
             className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors whitespace-nowrap"
           >
-            {isImportSectionOpen ? "Ocultar importación" : "Importar desde IBKR"}
+            {isImportSectionOpen ? "Ocultar importación" : "Importar desde mi broker"}
           </button>
         </div>
 
         {isImportSectionOpen ? (
-          <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden mb-4">
-            <div className="px-4 py-3 bg-[#f5f8ff] border-b border-[#e7ebf3]">
-              <h2 className="text-[15px] font-bold text-[#2f3a56]">
-                Importar cartera automáticamente
-              </h2>
-            </div>
+<div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden mb-4">
+  <div className="px-4 py-3 bg-[#f5f8ff] border-b border-[#e7ebf3]">
+    <h2 className="text-[15px] font-bold text-[#2f3a56]">
+      Importar cartera automáticamente
+    </h2>
+  </div>
 
-            <div className="px-4 py-4">
-              <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                Pega aquí tus posiciones de IBKR
-              </label>
+  <div className="px-4 py-4">
+    <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+      Pega aquí tus posiciones de IBKR
+    </label>
 
-              <textarea
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                placeholder="Pega aquí las posiciones copiadas desde IBKR..."
-                className="w-full min-h-[120px] rounded-lg border border-[#d9e2f1] px-3 py-3 text-[13px] text-[#24375d] outline-none focus:border-blue-400 resize-y"
-              />
+    <textarea
+      value={importText}
+      onChange={(e) => setImportText(e.target.value)}
+      placeholder="Pega aquí las posiciones copiadas desde IBKR..."
+      wrap="off"
+      spellCheck={false}
+      className="w-full h-[220px] rounded-lg border border-[#d9e2f1] px-3 py-3 text-[12px] text-[#24375d] outline-none focus:border-blue-400 resize-y overflow-x-auto overflow-y-auto font-mono leading-6 bg-white"
+    />
 
-              <div className="flex justify-end gap-3 mt-3">
-                <button
-                  type="button"
-                  className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors"
-                >
-                  Procesar
-                </button>
+    {importText.trim() ? (
+      <div className="mt-4">
+        <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
+          Vista previa
+        </label>
 
-                <button
-                  type="button"
-                  onClick={() => setImportText("")}
-                  className="h-[38px] px-4 rounded-lg border border-[#d9e2f1] bg-white text-[#2f3a56] text-[12px] font-semibold hover:bg-[#f8fbff] transition-colors"
-                >
-                  Limpiar
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="w-full min-h-[220px] rounded-lg border border-[#d9e2f1] bg-[#fbfcff] px-3 py-3 overflow-auto">
+          <pre className="text-[12px] text-[#24375d] font-mono leading-6 whitespace-pre m-0">
+            {formattedImportPreview}
+          </pre>
+        </div>
+      </div>
+    ) : null}
+
+    <div className="flex justify-end gap-3 mt-3">
+      <button
+        type="button"
+        className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors"
+      >
+        Procesar
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setImportText("")}
+        className="h-[38px] px-4 rounded-lg border border-[#d9e2f1] bg-white text-[#2f3a56] text-[12px] font-semibold hover:bg-[#f8fbff] transition-colors"
+      >
+        Limpiar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
         ) : null}
 
         <div className="bg-white border border-[#e7ebf3] rounded-[16px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden mb-4">
