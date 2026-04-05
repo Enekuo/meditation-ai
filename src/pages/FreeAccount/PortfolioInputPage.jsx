@@ -107,6 +107,8 @@ const PortfolioInputPage = () => {
   const [formError, setFormError] = useState("");
   const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
+  const [importError, setImportError] = useState("");
 
   const importEditorRef = useRef(null);
 
@@ -274,6 +276,216 @@ const PortfolioInputPage = () => {
     })}`;
   };
 
+  const parseLocaleNumber = (value) => {
+    if (value === null || value === undefined) return null;
+
+    const cleaned = String(value)
+      .replace(/\u00A0/g, "")
+      .replace(/\s+/g, "")
+      .replace(/%/g, "")
+      .trim();
+
+    if (!cleaned || cleaned === "—" || cleaned === "-") return null;
+
+    const normalized = cleaned.includes(",")
+      ? cleaned.replace(/\./g, "").replace(",", ".")
+      : cleaned;
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const isTickerLine = (line) => /^[A-Z0-9.\-]{1,15}$/.test(line.trim());
+
+  const isCurrencyLine = (line) => /^(USD|EUR|GBP|GBp|GBX|AUD|CAD|CHF|CZK|DKK|HKD|HUF|JPY|MXN|NOK|NZD|SEK|SGD|AED|BRL|CNH|ILS|KRW|MYR|PLN|RON|SAR|TRY|TWD|ZAR)$/i.test(line.trim());
+
+  const mapCurrencyAndUnit = (rawCurrency) => {
+    const normalized = String(rawCurrency || "").trim();
+
+    if (normalized.toUpperCase() === "GBP") {
+      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
+    }
+
+    if (normalized === "GBp" || normalized.toUpperCase() === "GBX") {
+      return { quoteCurrency: "GBP", quoteUnit: "GBX" };
+    }
+
+    const upper = normalized.toUpperCase();
+
+    return {
+      quoteCurrency: quoteCurrencyOptions.includes(upper) ? upper : "EUR",
+      quoteUnit: "NORMAL",
+    };
+  };
+
+  const cleanImportedLines = (rawText) => {
+    return String(rawText || "")
+      .split(/\r?\n/)
+      .map((line) => line.replace(/\t/g, " ").trim())
+      .filter(Boolean)
+      .filter(
+        (line) =>
+          !line.toUpperCase().includes("INSTRUMENTO") &&
+          !line.toUpperCase().includes("POSICIÓN") &&
+          !line.toUpperCase().includes("ÚLTIMO") &&
+          !line.toUpperCase().includes("% VARIACI") &&
+          !line.toUpperCase().includes("BASE DE CO") &&
+          !line.toUpperCase().includes("VALOR DE MER") &&
+          !line.toUpperCase().includes("PRECIO MEDI") &&
+          !line.toUpperCase().includes("PYG DIARIAS") &&
+          !line.toUpperCase().includes("PYG NO REALIZA")
+      );
+  };
+
+  const splitBlocksByTicker = (lines) => {
+    const blocks = [];
+    let currentBlock = [];
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+
+      if (isTickerLine(line)) {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock);
+        }
+        currentBlock = [line];
+      } else if (currentBlock.length > 0) {
+        currentBlock.push(line);
+      }
+    }
+
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock);
+    }
+
+    return blocks;
+  };
+
+  const extractPositionFromBlock = (block) => {
+    if (!Array.isArray(block) || block.length < 3) return null;
+
+    const ticker = block[0].trim().toUpperCase();
+    const metricsLine = block[2] || "";
+    const metricsTokens = metricsLine.split(/\s+/).filter(Boolean);
+
+    if (metricsTokens.length < 5) return null;
+
+    const shares = parseLocaleNumber(metricsTokens[0]);
+    const currentPrice = parseLocaleNumber(metricsTokens[1]);
+
+    let percentIndex = metricsTokens.findIndex((token) => token.includes("%"));
+    if (percentIndex === -1 && metricsTokens.length >= 5) {
+      percentIndex = 3;
+    }
+
+    const marketValue = parseLocaleNumber(metricsTokens[percentIndex + 1]);
+
+    const currencyValuePairs = [];
+
+    for (let i = 3; i < block.length; i += 1) {
+      const line = block[i];
+      const nextLine = block[i + 1];
+
+      if (isCurrencyLine(line) && nextLine) {
+        const parsedValue = parseLocaleNumber(nextLine);
+        if (parsedValue !== null) {
+          currencyValuePairs.push({
+            currency: line.trim(),
+            value: parsedValue,
+          });
+          i += 1;
+        }
+      }
+    }
+
+    const baseCostPair = currencyValuePairs[0] || null;
+    const avgCostPair = currencyValuePairs[1] || null;
+    const unrealizedPair = currencyValuePairs[3] || null;
+
+    const currencyInfo = mapCurrencyAndUnit(
+      avgCostPair?.currency || baseCostPair?.currency || "EUR"
+    );
+
+    if (shares === null || currentPrice === null) return null;
+
+    return {
+      id: crypto.randomUUID(),
+      ticker,
+      price: currentPrice,
+      quoteCurrency: currencyInfo.quoteCurrency,
+      quoteUnit: currencyInfo.quoteUnit,
+      sector: "",
+      type: "",
+      shares,
+      avgCost:
+        avgCostPair?.value !== undefined && avgCostPair?.value !== null
+          ? avgCostPair.value
+          : 0,
+      annualDividend: 0,
+      realizedGain:
+        unrealizedPair?.value !== undefined && unrealizedPair?.value !== null
+          ? unrealizedPair.value
+          : 0,
+      marketValue:
+        marketValue !== null ? marketValue : shares * currentPrice,
+    };
+  };
+
+  const handleAutoFillFromIbkr = () => {
+    setImportMessage("");
+    setImportError("");
+
+    const rawText = importEditorRef.current?.innerText || "";
+
+    if (!rawText.trim()) {
+      setImportError("Primero pega tus posiciones de IBKR en el cuadro.");
+      return;
+    }
+
+    const lines = cleanImportedLines(rawText);
+    const blocks = splitBlocksByTicker(lines);
+    const importedPositions = blocks
+      .map((block) => extractPositionFromBlock(block))
+      .filter(Boolean);
+
+    if (importedPositions.length === 0) {
+      setImportError("No se han podido detectar posiciones válidas con ese formato.");
+      return;
+    }
+
+    const updatedPositions = [...positions];
+
+    importedPositions.forEach((importedPosition) => {
+      const existingIndex = updatedPositions.findIndex(
+        (position) => position.ticker === importedPosition.ticker
+      );
+
+      if (existingIndex >= 0) {
+        updatedPositions[existingIndex] = {
+          ...updatedPositions[existingIndex],
+          ticker: importedPosition.ticker,
+          price: importedPosition.price,
+          quoteCurrency: importedPosition.quoteCurrency,
+          quoteUnit: importedPosition.quoteUnit,
+          shares: importedPosition.shares,
+          avgCost: importedPosition.avgCost,
+          realizedGain: importedPosition.realizedGain,
+          annualDividend: 0,
+        };
+      } else {
+        updatedPositions.push(importedPosition);
+      }
+    });
+
+    persistPositions(updatedPositions);
+
+    setImportMessage(
+      `${importedPositions.length} ${
+        importedPositions.length === 1 ? "posición rellenada" : "posiciones rellenadas"
+      } automáticamente.`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
       <div className="max-w-[1280px] mx-auto px-4 pt-0 pb-3 -mt-12">
@@ -318,16 +530,38 @@ const PortfolioInputPage = () => {
               <div className="flex justify-end gap-3 mt-3">
                 <button
                   type="button"
+                  onClick={handleAutoFillFromIbkr}
+                  className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors"
+                >
+                  Rellenar posiciones automáticamente
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => {
                     if (importEditorRef.current) {
                       importEditorRef.current.innerHTML = "";
                     }
+                    setImportMessage("");
+                    setImportError("");
                   }}
                   className="h-[38px] px-4 rounded-lg border border-[#d9e2f1] bg-white text-[#2f3a56] text-[12px] font-semibold hover:bg-[#f8fbff] transition-colors"
                 >
                   Limpiar
                 </button>
               </div>
+
+              {importMessage ? (
+                <p className="mt-3 text-[12px] font-semibold text-[#39a96b]">
+                  {importMessage}
+                </p>
+              ) : null}
+
+              {importError ? (
+                <p className="mt-3 text-[12px] font-semibold text-[#d94b62]">
+                  {importError}
+                </p>
+              ) : null}
             </div>
           </div>
         ) : null}
