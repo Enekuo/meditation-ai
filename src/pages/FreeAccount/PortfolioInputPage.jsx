@@ -295,9 +295,12 @@ const PortfolioInputPage = () => {
     return Number.isFinite(parsed) ? parsed : null;
   };
 
-  const isTickerLine = (line) => /^[A-Z0-9.\-]{1,15}$/.test(line.trim());
+  const isTickerLine = (line) => /^[A-Z0-9.\-]{1,15}$/.test(String(line || "").trim());
 
-  const isCurrencyLine = (line) => /^(USD|EUR|GBP|GBp|GBX|AUD|CAD|CHF|CZK|DKK|HKD|HUF|JPY|MXN|NOK|NZD|SEK|SGD|AED|BRL|CNH|ILS|KRW|MYR|PLN|RON|SAR|TRY|TWD|ZAR)$/i.test(line.trim());
+  const isCurrencyLine = (line) =>
+    /^(USD|EUR|GBP|GBp|GBX|AUD|CAD|CHF|CZK|DKK|HKD|HUF|JPY|MXN|NOK|NZD|SEK|SGD|AED|BRL|CNH|ILS|KRW|MYR|PLN|RON|SAR|TRY|TWD|ZAR)$/i.test(
+      String(line || "").trim()
+    );
 
   const mapCurrencyAndUnit = (rawCurrency) => {
     const normalized = String(rawCurrency || "").trim();
@@ -323,18 +326,20 @@ const PortfolioInputPage = () => {
       .split(/\r?\n/)
       .map((line) => line.replace(/\t/g, " ").trim())
       .filter(Boolean)
-      .filter(
-        (line) =>
-          !line.toUpperCase().includes("INSTRUMENTO") &&
-          !line.toUpperCase().includes("POSICIÓN") &&
-          !line.toUpperCase().includes("ÚLTIMO") &&
-          !line.toUpperCase().includes("% VARIACI") &&
-          !line.toUpperCase().includes("BASE DE CO") &&
-          !line.toUpperCase().includes("VALOR DE MER") &&
-          !line.toUpperCase().includes("PRECIO MEDI") &&
-          !line.toUpperCase().includes("PYG DIARIAS") &&
-          !line.toUpperCase().includes("PYG NO REALIZA")
-      );
+      .filter((line) => {
+        const upper = line.toUpperCase();
+        return (
+          !upper.includes("INSTRUMENTO") &&
+          !upper.includes("POSICIÓN") &&
+          !upper.includes("ÚLTIMO") &&
+          !upper.includes("% VARIACI") &&
+          !upper.includes("BASE DE CO") &&
+          !upper.includes("VALOR DE MER") &&
+          !upper.includes("PRECIO MEDI") &&
+          !upper.includes("PYG DIARIAS") &&
+          !upper.includes("PYG NO REALIZA")
+        );
+      });
   };
 
   const splitBlocksByTicker = (lines) => {
@@ -361,73 +366,75 @@ const PortfolioInputPage = () => {
     return blocks;
   };
 
-  const extractPositionFromBlock = (block) => {
-    if (!Array.isArray(block) || block.length < 3) return null;
+  const parseMetricsLine = (line) => {
+    const normalized = String(line || "").replace(/\s+/g, " ").trim();
+    const match = normalized.match(
+      /^([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s*%\s+([+-]?\d+(?:[.,]\d+)?)$/
+    );
 
-    const ticker = block[0].trim().toUpperCase();
-    const metricsLine = block[2] || "";
-    const metricsTokens = metricsLine.split(/\s+/).filter(Boolean);
+    if (!match) return null;
 
-    if (metricsTokens.length < 5) return null;
+    return {
+      shares: parseLocaleNumber(match[1]),
+      price: parseLocaleNumber(match[2]),
+      variation: parseLocaleNumber(match[3]),
+      baseCostTotal: parseLocaleNumber(match[4]),
+    };
+  };
 
-    const shares = parseLocaleNumber(metricsTokens[0]);
-    const currentPrice = parseLocaleNumber(metricsTokens[1]);
-
-    let percentIndex = metricsTokens.findIndex((token) => token.includes("%"));
-    if (percentIndex === -1 && metricsTokens.length >= 5) {
-      percentIndex = 3;
-    }
-
-    const marketValue = parseLocaleNumber(metricsTokens[percentIndex + 1]);
-
-    const currencyValuePairs = [];
+  const extractCurrencyValuePairs = (block) => {
+    const pairs = [];
 
     for (let i = 3; i < block.length; i += 1) {
-      const line = block[i];
+      const currentLine = block[i];
       const nextLine = block[i + 1];
 
-      if (isCurrencyLine(line) && nextLine) {
-        const parsedValue = parseLocaleNumber(nextLine);
-        if (parsedValue !== null) {
-          currencyValuePairs.push({
-            currency: line.trim(),
-            value: parsedValue,
-          });
-          i += 1;
-        }
+      if (isCurrencyLine(currentLine)) {
+        pairs.push({
+          currency: currentLine.trim(),
+          rawValue: nextLine ? nextLine.trim() : "",
+          value: parseLocaleNumber(nextLine),
+        });
+        i += 1;
       }
     }
 
-    const baseCostPair = currencyValuePairs[0] || null;
-    const avgCostPair = currencyValuePairs[1] || null;
-    const unrealizedPair = currencyValuePairs[3] || null;
+    return pairs;
+  };
+
+  const extractPositionFromBlock = (block) => {
+    if (!Array.isArray(block) || block.length < 7) return null;
+
+    const ticker = block[0].trim().toUpperCase();
+    const metrics = parseMetricsLine(block[2]);
+
+    if (!metrics || metrics.shares === null || metrics.price === null) {
+      return null;
+    }
+
+    const pairs = extractCurrencyValuePairs(block);
+
+    const marketValuePair = pairs[0] || null;
+    const avgCostPair = pairs[1] || null;
+    const unrealizedPair = pairs[3] || null;
 
     const currencyInfo = mapCurrencyAndUnit(
-      avgCostPair?.currency || baseCostPair?.currency || "EUR"
+      avgCostPair?.currency || marketValuePair?.currency || "EUR"
     );
-
-    if (shares === null || currentPrice === null) return null;
 
     return {
       id: crypto.randomUUID(),
       ticker,
-      price: currentPrice,
+      price: metrics.price ?? 0,
       quoteCurrency: currencyInfo.quoteCurrency,
       quoteUnit: currencyInfo.quoteUnit,
       sector: "",
       type: "",
-      shares,
-      avgCost:
-        avgCostPair?.value !== undefined && avgCostPair?.value !== null
-          ? avgCostPair.value
-          : 0,
+      shares: metrics.shares ?? 0,
+      avgCost: avgCostPair?.value ?? 0,
       annualDividend: 0,
-      realizedGain:
-        unrealizedPair?.value !== undefined && unrealizedPair?.value !== null
-          ? unrealizedPair.value
-          : 0,
-      marketValue:
-        marketValue !== null ? marketValue : shares * currentPrice,
+      realizedGain: unrealizedPair?.value ?? 0,
+      marketValue: marketValuePair?.value ?? 0,
     };
   };
 
