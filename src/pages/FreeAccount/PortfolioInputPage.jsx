@@ -281,11 +281,12 @@ const PortfolioInputPage = () => {
 
     const cleaned = String(value)
       .replace(/\u00A0/g, "")
+      .replace(/[−–—]/g, "-")
       .replace(/\s+/g, "")
       .replace(/%/g, "")
       .trim();
 
-    if (!cleaned || cleaned === "—" || cleaned === "-") return null;
+    if (!cleaned || cleaned === "-" || cleaned === "—") return null;
 
     const normalized = cleaned.includes(",")
       ? cleaned.replace(/\./g, "").replace(",", ".")
@@ -295,7 +296,8 @@ const PortfolioInputPage = () => {
     return Number.isFinite(parsed) ? parsed : null;
   };
 
-  const isTickerLine = (line) => /^[A-Z0-9.\-]{1,15}$/.test(String(line || "").trim());
+  const isTickerLine = (line) =>
+    /^[A-Z0-9.\-]{1,15}$/.test(String(line || "").trim());
 
   const isCurrencyLine = (line) =>
     /^(USD|EUR|GBP|GBp|GBX|AUD|CAD|CHF|CZK|DKK|HKD|HUF|JPY|MXN|NOK|NZD|SEK|SGD|AED|BRL|CNH|ILS|KRW|MYR|PLN|RON|SAR|TRY|TWD|ZAR)$/i.test(
@@ -367,18 +369,21 @@ const PortfolioInputPage = () => {
   };
 
   const parseMetricsLine = (line) => {
-    const normalized = String(line || "").replace(/\s+/g, " ").trim();
-    const match = normalized.match(
-      /^([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s*%\s+([+-]?\d+(?:[.,]\d+)?)$/
-    );
+    const normalized = String(line || "")
+      .replace(/\u00A0/g, " ")
+      .replace(/[−–—]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    if (!match) return null;
+    const matches = normalized.match(/[+-]?\d+(?:[.,]\d+)?/g);
+
+    if (!matches || matches.length < 4) return null;
 
     return {
-      shares: parseLocaleNumber(match[1]),
-      price: parseLocaleNumber(match[2]),
-      variation: parseLocaleNumber(match[3]),
-      baseCostTotal: parseLocaleNumber(match[4]),
+      shares: parseLocaleNumber(matches[0]),
+      price: parseLocaleNumber(matches[1]),
+      variation: parseLocaleNumber(matches[2]),
+      baseCostTotal: parseLocaleNumber(matches[3]),
     };
   };
 
@@ -386,13 +391,13 @@ const PortfolioInputPage = () => {
     const pairs = [];
 
     for (let i = 3; i < block.length; i += 1) {
-      const currentLine = block[i];
-      const nextLine = block[i + 1];
+      const currentLine = String(block[i] || "").trim();
+      const nextLine = String(block[i + 1] || "").trim();
 
       if (isCurrencyLine(currentLine)) {
         pairs.push({
-          currency: currentLine.trim(),
-          rawValue: nextLine ? nextLine.trim() : "",
+          currency: currentLine,
+          rawValue: nextLine,
           value: parseLocaleNumber(nextLine),
         });
         i += 1;
@@ -405,10 +410,10 @@ const PortfolioInputPage = () => {
   const extractPositionFromBlock = (block) => {
     if (!Array.isArray(block) || block.length < 7) return null;
 
-    const ticker = block[0].trim().toUpperCase();
+    const ticker = String(block[0] || "").trim().toUpperCase();
     const metrics = parseMetricsLine(block[2]);
 
-    if (!metrics || metrics.shares === null || metrics.price === null) {
+    if (!ticker || !metrics || metrics.shares === null || metrics.price === null) {
       return null;
     }
 
@@ -416,10 +421,11 @@ const PortfolioInputPage = () => {
 
     const marketValuePair = pairs[0] || null;
     const avgCostPair = pairs[1] || null;
+    const dailyPnLPair = pairs[2] || null;
     const unrealizedPair = pairs[3] || null;
 
     const currencyInfo = mapCurrencyAndUnit(
-      avgCostPair?.currency || marketValuePair?.currency || "EUR"
+      avgCostPair?.currency || marketValuePair?.currency || unrealizedPair?.currency || "EUR"
     );
 
     return {
@@ -435,6 +441,7 @@ const PortfolioInputPage = () => {
       annualDividend: 0,
       realizedGain: unrealizedPair?.value ?? 0,
       marketValue: marketValuePair?.value ?? 0,
+      dailyPnL: dailyPnLPair?.value ?? 0,
     };
   };
 
