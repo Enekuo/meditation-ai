@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";
@@ -106,12 +106,9 @@ const PortfolioInputPage = () => {
   const [generalSavedMessage, setGeneralSavedMessage] = useState("");
   const [formError, setFormError] = useState("");
   const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
-
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
-  const [importText, setImportText] = useState("");
-  const [importPreviewRows, setImportPreviewRows] = useState([]);
-  const [importError, setImportError] = useState("");
-  const [importSuccessMessage, setImportSuccessMessage] = useState("");
+
+  const importEditorRef = useRef(null);
 
   useEffect(() => {
     const savedGeneral = localStorage.getItem(GENERAL_STORAGE_KEY);
@@ -277,316 +274,6 @@ const PortfolioInputPage = () => {
     })}`;
   };
 
-  const parseLocaleNumber = (value) => {
-    if (value === null || value === undefined) return null;
-
-    const cleaned = String(value)
-      .replace(/\s+/g, "")
-      .replace(/%/g, "")
-      .replace(/\u00A0/g, "")
-      .trim();
-
-    if (!cleaned) return null;
-
-    const normalized = cleaned.includes(",")
-      ? cleaned.replace(/\./g, "").replace(",", ".")
-      : cleaned;
-
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  const isTickerLine = (line) => {
-    return /^[A-Z0-9.\-]{1,12}$/.test(line.trim());
-  };
-
-  const mapIbkrCurrency = (rawCurrency) => {
-    const normalized = String(rawCurrency || "").trim().toUpperCase();
-
-    if (normalized === "GBP" || normalized === "GBX" || normalized === "GBP.") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP ") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP\t") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP\n") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP\r") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP\r\n") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP.") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP,") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP;") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP:") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP-") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP/") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP_") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP+") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP=") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP*") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP?") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP!") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GBP)") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "(GBP") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "[GBP]") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "{GBP}") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === '"GBP"') {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "'GBP'") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "`GBP`") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GB P") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GB-P") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBP" || normalized === "GB/P") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBp".toUpperCase()) {
-      return { quoteCurrency: "GBP", quoteUnit: "GBX" };
-    }
-
-    return {
-      quoteCurrency: quoteCurrencyOptions.includes(normalized) ? normalized : "EUR",
-      quoteUnit: "NORMAL",
-    };
-  };
-
-  const parseIbkrBlocks = (rawText) => {
-    const cleanedLines = String(rawText || "")
-      .split(/\r?\n/)
-      .map((line) => line.replace(/\t/g, " ").trim())
-      .filter(Boolean)
-      .filter(
-        (line) =>
-          !line.includes("Instrumento") &&
-          !line.includes("Posición") &&
-          !line.includes("Último") &&
-          !line.includes("% variación") &&
-          !line.includes("Base de coste") &&
-          !line.includes("Valor de mercado") &&
-          !line.includes("Precio medio") &&
-          !line.includes("PyG diarias") &&
-          !line.includes("PyG no realizadas")
-      );
-
-    const blocks = [];
-    let currentBlock = [];
-
-    for (let i = 0; i < cleanedLines.length; i += 1) {
-      const line = cleanedLines[i];
-
-      if (isTickerLine(line)) {
-        if (currentBlock.length > 0) {
-          blocks.push(currentBlock);
-        }
-        currentBlock = [line];
-      } else if (currentBlock.length > 0) {
-        currentBlock.push(line);
-      }
-    }
-
-    if (currentBlock.length > 0) {
-      blocks.push(currentBlock);
-    }
-
-    return blocks;
-  };
-
-  const extractPreviewRowFromBlock = (block) => {
-    if (!Array.isArray(block) || block.length < 4) return null;
-
-    const ticker = block[0]?.trim()?.toUpperCase() || "";
-    const companyName = block[1]?.trim() || "";
-
-    const metricsLine = block[2] || "";
-    const metricsTokens = metricsLine.split(/\s+/).filter(Boolean);
-
-    const shares = parseLocaleNumber(metricsTokens[0]);
-    const avgCost = parseLocaleNumber(metricsTokens[1]);
-    const marketValue = parseLocaleNumber(metricsTokens[metricsTokens.length - 1]);
-
-    let rawCurrency = "";
-    let currentPrice = null;
-    let unrealizedGain = 0;
-
-    for (let i = 3; i < block.length; i += 1) {
-      const currentLine = block[i];
-      const nextLine = block[i + 1];
-
-      if (/^[A-Za-z]{3,4}$/.test(currentLine) && rawCurrency === "") {
-        rawCurrency = currentLine;
-      }
-
-      if (/^[A-Za-z]{3,4}$/.test(currentLine) && currentPrice === null) {
-        const maybePrice = parseLocaleNumber(nextLine);
-        if (maybePrice !== null && maybePrice > 0) {
-          currentPrice = maybePrice;
-          i += 1;
-          continue;
-        }
-      }
-
-      if (/^[+-]/.test(currentLine)) {
-        const maybeGain = parseLocaleNumber(currentLine);
-        if (maybeGain !== null) {
-          unrealizedGain = maybeGain;
-        }
-      }
-    }
-
-    const currencyInfo = mapIbkrCurrency(rawCurrency);
-
-    if (!ticker || shares === null || currentPrice === null) {
-      return null;
-    }
-
-    return {
-      id: crypto.randomUUID(),
-      ticker,
-      companyName,
-      shares,
-      avgCost: avgCost ?? 0,
-      price: currentPrice,
-      marketValue: marketValue ?? shares * currentPrice,
-      quoteCurrency: currencyInfo.quoteCurrency,
-      quoteUnit: currencyInfo.quoteUnit,
-      sector: "",
-      type: "",
-      annualDividend: 0,
-      realizedGain: 0,
-      unrealizedGain: unrealizedGain ?? 0,
-    };
-  };
-
-  const handleProcessImport = () => {
-    setImportError("");
-    setImportSuccessMessage("");
-    setImportPreviewRows([]);
-
-    if (!importText.trim()) {
-      setImportError("Pega primero el contenido copiado desde IBKR.");
-      return;
-    }
-
-    const blocks = parseIbkrBlocks(importText);
-    const parsedRows = blocks
-      .map((block) => extractPreviewRowFromBlock(block))
-      .filter(Boolean);
-
-    if (parsedRows.length === 0) {
-      setImportError("No se han podido detectar posiciones válidas con ese formato.");
-      return;
-    }
-
-    setImportPreviewRows(parsedRows);
-  };
-
-  const handleImportPreviewRows = () => {
-    if (importPreviewRows.length === 0) {
-      setImportError("Primero procesa el texto para generar la vista previa.");
-      return;
-    }
-
-    const importedPositions = importPreviewRows.map((row) => ({
-      id: crypto.randomUUID(),
-      ticker: row.ticker,
-      price: row.price,
-      quoteCurrency: row.quoteCurrency,
-      quoteUnit: row.quoteUnit,
-      sector: row.sector,
-      type: row.type,
-      shares: row.shares,
-      avgCost: row.avgCost,
-      annualDividend: row.annualDividend,
-      realizedGain: row.realizedGain,
-    }));
-
-    const updated = [...positions, ...importedPositions];
-    persistPositions(updated);
-
-    setImportSuccessMessage(
-      `${importedPositions.length} ${
-        importedPositions.length === 1 ? "posición importada" : "posiciones importadas"
-      } correctamente.`
-    );
-    setImportPreviewRows([]);
-    setImportText("");
-  };
-
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
       <div className="max-w-[1280px] mx-auto px-4 pt-0 pb-3 -mt-12">
@@ -620,138 +307,27 @@ const PortfolioInputPage = () => {
                 Pega aquí tus posiciones de IBKR
               </label>
 
-              <textarea
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                placeholder="Pega aquí las posiciones copiadas desde IBKR..."
-                wrap="off"
-                spellCheck={false}
-                className="w-full h-[260px] rounded-lg border border-[#d9e2f1] px-3 py-3 text-[12px] text-[#24375d] outline-none focus:border-blue-400 resize-y overflow-x-auto overflow-y-auto font-mono leading-6 bg-white"
+              <div
+                ref={importEditorRef}
+                contentEditable
+                suppressContentEditableWarning
+                className="w-full min-h-[320px] rounded-lg border border-[#d9e2f1] px-4 py-3 text-[14px] text-[#24375d] outline-none overflow-auto bg-white whitespace-pre-wrap"
+                style={{ fontFamily: "monospace" }}
               />
 
               <div className="flex justify-end gap-3 mt-3">
                 <button
                   type="button"
-                  onClick={handleProcessImport}
-                  className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors"
-                >
-                  Procesar
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => {
-                    setImportText("");
-                    setImportPreviewRows([]);
-                    setImportError("");
-                    setImportSuccessMessage("");
+                    if (importEditorRef.current) {
+                      importEditorRef.current.innerHTML = "";
+                    }
                   }}
                   className="h-[38px] px-4 rounded-lg border border-[#d9e2f1] bg-white text-[#2f3a56] text-[12px] font-semibold hover:bg-[#f8fbff] transition-colors"
                 >
                   Limpiar
                 </button>
               </div>
-
-              {importError ? (
-                <p className="mt-3 text-[12px] font-semibold text-[#d94b62]">
-                  {importError}
-                </p>
-              ) : null}
-
-              {importSuccessMessage ? (
-                <p className="mt-3 text-[12px] font-semibold text-[#39a96b]">
-                  {importSuccessMessage}
-                </p>
-              ) : null}
-
-              {importPreviewRows.length > 0 ? (
-                <div className="mt-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-[15px] font-bold text-[#2f3a56]">
-                      Vista previa
-                    </h3>
-
-                    <div className="text-[12px] font-semibold text-[#65728d]">
-                      {importPreviewRows.length}{" "}
-                      {importPreviewRows.length === 1 ? "posición detectada" : "posiciones detectadas"}
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto rounded-[14px] border border-[#e7ebf3]">
-                    <table className="w-full min-w-[1100px] border-collapse">
-                      <thead className="bg-[#f5f8ff]">
-                        <tr>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Ticker
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Empresa
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Acciones
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Precio Actual
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Costo Prom.
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Valor Mercado
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Moneda
-                          </th>
-                          <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                            Unidad
-                          </th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {importPreviewRows.map((row) => (
-                          <tr key={row.id} className="bg-white">
-                            <td className="px-3 py-2.5 text-[12px] font-semibold text-[#24375d] border-b border-[#edf1f7]">
-                              {row.ticker}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {row.companyName}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {row.shares}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {formatMoney(row.price, row.quoteCurrency)}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {formatMoney(row.avgCost, row.quoteCurrency)}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {formatMoney(row.marketValue, row.quoteCurrency)}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {row.quoteCurrency}
-                            </td>
-                            <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                              {row.quoteUnit}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="flex justify-end gap-3 mt-3">
-                    <button
-                      type="button"
-                      onClick={handleImportPreviewRows}
-                      className="h-[38px] px-4 rounded-lg bg-[#3f7ee8] text-white text-[12px] font-bold hover:bg-[#316fda] transition-colors"
-                    >
-                      Importar posiciones
-                    </button>
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
         ) : null}
