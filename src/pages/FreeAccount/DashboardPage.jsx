@@ -74,7 +74,7 @@ const formatPercent = (value) => {
 
 const formatCompactPercent = (value) => {
   const num = Number(value || 0);
-  return `${Math.round(num)}%`;
+  return `${num.toFixed(1)}%`;
 };
 
 const getAmountColor = (value) => {
@@ -603,7 +603,7 @@ const DashboardPage = () => {
                   />
                   <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
                     <span className="text-[12px] font-semibold text-[#94a3b8]">
-                      {sectors.length ? formatCompactPercent(sectors[0].percent) : "0%"}
+                      {sectors.length ? formatCompactPercent(sectors[0].percent) : "0.0%"}
                     </span>
                   </div>
                 </div>
