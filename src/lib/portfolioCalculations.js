@@ -127,42 +127,31 @@ const normalizePosition = (position, baseCurrency) => {
     position.quoteUnit || "NORMAL"
   );
 
-const importedMarketValueOriginal = normalizeNumber(position.marketValueOriginal);
-const importedCostBasisOriginal = normalizeNumber(position.costBasisOriginal);
-const importedUnrealizedGainOriginal = normalizeNumber(position.unrealizedGainOriginal);
+  const importedMarketValueOriginal = normalizeNumber(position.marketValueOriginal);
+  const importedCostBasisOriginal = normalizeNumber(position.costBasisOriginal);
 
-const fallbackMarketValueOriginal = currentPriceOriginal * shares;
-const fallbackCostBasisOriginal = avgCostOriginal * shares;
-const fallbackUnrealizedGainOriginal =
-  fallbackMarketValueOriginal - fallbackCostBasisOriginal;
+  const fallbackMarketValueOriginal = currentPriceOriginal * shares;
+  const fallbackCostBasisOriginal = avgCostOriginal * shares;
 
-const hasImportedMarketValue =
-  position.marketValueOriginal !== undefined &&
-  position.marketValueOriginal !== null &&
-  position.marketValueOriginal !== "";
+  const hasImportedMarketValue =
+    position.marketValueOriginal !== undefined &&
+    position.marketValueOriginal !== null &&
+    position.marketValueOriginal !== "";
 
-const hasImportedCostBasis =
-  position.costBasisOriginal !== undefined &&
-  position.costBasisOriginal !== null &&
-  position.costBasisOriginal !== "";
+  const hasImportedCostBasis =
+    position.costBasisOriginal !== undefined &&
+    position.costBasisOriginal !== null &&
+    position.costBasisOriginal !== "";
 
-const hasImportedUnrealizedGain =
-  position.unrealizedGainOriginal !== undefined &&
-  position.unrealizedGainOriginal !== null &&
-  position.unrealizedGainOriginal !== "";
+  const marketValueOriginal = hasImportedMarketValue
+    ? importedMarketValueOriginal
+    : fallbackMarketValueOriginal;
 
-const marketValueOriginal = hasImportedMarketValue
-  ? importedMarketValueOriginal
-  : fallbackMarketValueOriginal;
+  const costBasisOriginal = hasImportedCostBasis
+    ? importedCostBasisOriginal
+    : fallbackCostBasisOriginal;
 
-const costBasisOriginal = hasImportedCostBasis
-  ? importedCostBasisOriginal
-  : fallbackCostBasisOriginal;
-
-const unrealizedGainOriginal = hasImportedUnrealizedGain
-  ? importedUnrealizedGainOriginal
-  : fallbackUnrealizedGainOriginal;
-
+  const unrealizedGainOriginal = marketValueOriginal - costBasisOriginal;
 
   const currentPriceInBase = convertCurrency(
     currentPriceOriginal,

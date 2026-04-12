@@ -699,14 +699,12 @@ const DashboardPage = () => {
                           </span>
                           <span
                             className="text-[13px] font-bold"
-
                             style={{ color: getAmountColor(position.unrealizedGain) }}
->
-  {Number(position.unrealizedGain || 0).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}
-
+                          >
+                            {Number(position.unrealizedGain || 0).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </span>
                         </div>
                       </div>
