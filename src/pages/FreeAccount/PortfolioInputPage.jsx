@@ -748,9 +748,6 @@ const parseFlexibleNumber = (value) => {
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-[#2f3a56] mb-1.5">
-                  Unidad
-                </label>
                 <select
                   name="quoteUnit"
                   value={formData.quoteUnit}
@@ -914,9 +911,6 @@ const parseFlexibleNumber = (value) => {
                       Moneda
                     </th>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                      Unidad
-                    </th>
-                    <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
                       Sector
                     </th>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
@@ -961,9 +955,6 @@ const parseFlexibleNumber = (value) => {
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.quoteCurrency}
-                        </td>
-                        <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
-                          {position.quoteUnit}
                         </td>
                         <td className="px-3 py-2.5 text-[12px] text-[#24375d] border-b border-[#edf1f7]">
                           {position.sector}
