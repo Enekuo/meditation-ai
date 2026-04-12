@@ -146,10 +146,14 @@ const normalizePosition = (position, baseCurrency) => {
       ? importedCostBasisOriginal
       : fallbackCostBasisOriginal;
 
-  const unrealizedGainOriginal =
-    importedUnrealizedGainOriginal !== 0 || position.unrealizedGainOriginal === 0
-      ? importedUnrealizedGainOriginal
-      : fallbackUnrealizedGainOriginal;
+const hasImportedUnrealizedGain =
+  position.unrealizedGainOriginal !== undefined &&
+  position.unrealizedGainOriginal !== null &&
+  position.unrealizedGainOriginal !== "";
+
+const unrealizedGainOriginal = hasImportedUnrealizedGain
+  ? importedUnrealizedGainOriginal
+  : fallbackUnrealizedGainOriginal;
 
   const currentPriceInBase = convertCurrency(
     currentPriceOriginal,
