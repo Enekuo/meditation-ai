@@ -198,28 +198,39 @@ const PortfolioInputPage = () => {
     return "";
   };
 
-  const buildPositionObject = () => {
-    return {
-      id: editingId || crypto.randomUUID(),
-      ticker: formData.ticker.trim().toUpperCase(),
-      price: Number(String(formData.price).replace(",", ".")),
-      quoteCurrency: formData.quoteCurrency,
-      quoteUnit: formData.quoteUnit,
-      sector: formData.sector,
-      type: formData.type,
-      shares: Number(String(formData.shares).replace(",", ".")),
-      avgCost: Number(String(formData.avgCost).replace(",", ".")),
-      annualDividend: Number(String(formData.annualDividend).replace(",", ".")),
-      realizedGain: Number(String(formData.realizedGain).replace(",", ".")),
-      unrealizedGainOriginal: 0,
-      marketValueOriginal:
-        Number(String(formData.price).replace(",", ".")) *
-        Number(String(formData.shares).replace(",", ".")),
-      costBasisOriginal:
-        Number(String(formData.avgCost).replace(",", ".")) *
-        Number(String(formData.shares).replace(",", ".")),
-    };
+const buildPositionObject = () => {
+  const existingPosition =
+    positions.find((position) => position.id === editingId) || null;
+
+  const parsedPrice = Number(String(formData.price).replace(",", "."));
+  const parsedShares = Number(String(formData.shares).replace(",", "."));
+  const parsedAvgCost = Number(String(formData.avgCost).replace(",", "."));
+  const parsedAnnualDividend = Number(
+    String(formData.annualDividend).replace(",", ".")
+  );
+  const parsedRealizedGain = Number(
+    String(formData.realizedGain).replace(",", ".")
+  );
+
+  return {
+    id: editingId || crypto.randomUUID(),
+    ticker: formData.ticker.trim().toUpperCase(),
+    price: parsedPrice,
+    quoteCurrency: formData.quoteCurrency,
+    quoteUnit: formData.quoteUnit,
+    sector: formData.sector,
+    type: formData.type,
+    shares: parsedShares,
+    avgCost: parsedAvgCost,
+    annualDividend: parsedAnnualDividend,
+    realizedGain: parsedRealizedGain,
+    unrealizedGainOriginal: existingPosition?.unrealizedGainOriginal ?? 0,
+    marketValueOriginal:
+      existingPosition?.marketValueOriginal ?? parsedPrice * parsedShares,
+    costBasisOriginal:
+      existingPosition?.costBasisOriginal ?? parsedAvgCost * parsedShares,
   };
+};
 
   const persistPositions = (nextPositions) => {
     setPositions(nextPositions);
