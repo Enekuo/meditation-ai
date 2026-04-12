@@ -1,3 +1,15 @@
+const normalizeNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 0;
+
+  if (typeof value === "string") {
+    const cleaned = value.replace(",", ".");
+    const num = Number(cleaned);
+    return Number.isFinite(num) ? num : 0;
+  }
+
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+};
 const FX_RATES_TO_USD = {
   USD: 1,
   EUR: 1.1725,
