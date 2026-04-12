@@ -897,8 +897,8 @@ const parseFlexibleNumber = (value) => {
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-[14px] border border-[#e7ebf3]">
-              <table className="w-full min-w-[1300px] border-collapse">
+<div className="w-full rounded-[14px] border border-[#e7ebf3] overflow-hidden">
+  <table className="w-full table-fixed border-collapse">
                 <thead className="bg-[#f5f8ff]">
                   <tr>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
@@ -975,24 +975,24 @@ const parseFlexibleNumber = (value) => {
                           {formatMoney(position.realizedGain, generalData.currency)}
                         </td>
                         <td className="px-3 py-2.5 border-b border-[#edf1f7]">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleEditPosition(position)}
-                              className="h-[30px] px-3 rounded-md bg-[#3f7ee8] text-white text-[11px] font-bold hover:bg-[#316fda] transition-colors"
-                            >
-                              Editar
-                            </button>
+  <div className="flex items-center gap-1.5">
+    <button
+      type="button"
+      onClick={() => handleEditPosition(position)}
+      className="h-[28px] px-2.5 rounded-md bg-[#3f7ee8] text-white text-[10px] font-bold hover:bg-[#316fda] transition-colors"
+    >
+      Editar
+    </button>
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePosition(position.id)}
-                              className="h-[30px] px-3 rounded-md bg-[#d94b62] text-white text-[11px] font-bold hover:bg-[#c73c53] transition-colors"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
+    <button
+      type="button"
+      onClick={() => handleDeletePosition(position.id)}
+      className="h-[28px] px-2.5 rounded-md bg-[#d94b62] text-white text-[10px] font-bold hover:bg-[#c73c53] transition-colors"
+    >
+      Eliminar
+    </button>
+  </div>
+</td>
                       </tr>
                     ))
                   )}
