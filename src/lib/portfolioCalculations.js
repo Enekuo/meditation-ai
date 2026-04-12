@@ -10,6 +10,18 @@ const normalizeNumber = (value) => {
   const num = Number(value);
   return Number.isFinite(num) ? num : 0;
 };
+
+const normalizeQuotedValue = (value, quoteUnit = "NORMAL") => {
+  const num = normalizeNumber(value);
+
+  if (quoteUnit === "GBX") {
+    return num / 100;
+  }
+
+  return num;
+};
+
+
 const FX_RATES_TO_USD = {
   USD: 1,
   EUR: 1.1725,
