@@ -1,71 +1,48 @@
-const FX_RATES_TO_EUR = {
-  EUR: 1,
-  USD: 0.93,
-  GBP: 1.17,
-  AUD: 0.61,
-  CAD: 0.68,
-  CHF: 1.04,
-  CZK: 0.040,
-  DKK: 0.134,
-  HKD: 0.119,
-  HUF: 0.0025,
-  JPY: 0.0062,
-  MXN: 0.050,
-  NOK: 0.085,
-  NZD: 0.56,
-  SEK: 0.089,
-  SGD: 0.69,
-  AED: 0.253,
-  BRL: 0.17,
-  CNH: 0.128,
-  ILS: 0.25,
-  KRW: 0.00068,
-  MYR: 0.20,
-  PLN: 0.23,
-  RON: 0.20,
-  SAR: 0.248,
-  TRY: 0.027,
-  TWD: 0.029,
-  ZAR: 0.051,
+const FX_RATES_TO_USD = {
+  USD: 1,
+  EUR: 1.1725,
+  GBP: 1.3463,
+  AUD: 0.715,
+  CAD: 0.797,
+  CHF: 1.219,
+  CZK: 0.0469,
+  DKK: 0.1571,
+  HKD: 0.1395,
+  HUF: 0.00293,
+  JPY: 0.00727,
+  MXN: 0.0586,
+  NOK: 0.0997,
+  NZD: 0.656,
+  SEK: 0.1044,
+  SGD: 0.809,
+  AED: 0.296,
+  BRL: 0.199,
+  CNH: 0.150,
+  ILS: 0.293,
+  KRW: 0.000798,
+  MYR: 0.234,
+  PLN: 0.270,
+  RON: 0.234,
+  SAR: 0.291,
+  TRY: 0.0317,
+  TWD: 0.0340,
+  ZAR: 0.0598,
 };
 
-const normalizeNumber = (value) => {
-  if (value === null || value === undefined || value === "") return 0;
-
-  if (typeof value === "string") {
-    const cleaned = value.replace(",", ".");
-    const num = Number(cleaned);
-    return Number.isFinite(num) ? num : 0;
-  }
-
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
+const getFxRateToUSD = (currency = "USD") => {
+  return FX_RATES_TO_USD[currency] || 1;
 };
 
-const normalizeQuotedValue = (value, quoteUnit = "NORMAL") => {
-  const num = normalizeNumber(value);
-
-  if (quoteUnit === "GBX") {
-    return num / 100;
-  }
-
-  return num;
-};
-
-const getFxRateToEUR = (currency = "EUR") => {
-  return FX_RATES_TO_EUR[currency] || 1;
-};
-
-const convertCurrency = (value, fromCurrency = "EUR", toCurrency = "EUR") => {
+const convertCurrency = (value, fromCurrency = "USD", toCurrency = "USD") => {
   const amount = normalizeNumber(value);
 
   if (fromCurrency === toCurrency) return amount;
 
-  const fromRateToEUR = getFxRateToEUR(fromCurrency);
-  const toRateToEUR = getFxRateToEUR(toCurrency);
+  const fromRateToUSD = getFxRateToUSD(fromCurrency);
+  const toRateToUSD = getFxRateToUSD(toCurrency);
 
-  const valueInEUR = amount * fromRateToEUR;
-  return valueInEUR / toRateToEUR;
+  const valueInUSD = amount * fromRateToUSD;
+  return valueInUSD / toRateToUSD;
 };
 
 const getPositionPriceInBase = (position, baseCurrency) => {
