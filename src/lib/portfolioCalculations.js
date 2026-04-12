@@ -126,6 +126,30 @@ const normalizePosition = (position, baseCurrency) => {
     position.quoteUnit || "NORMAL"
   );
 
+  const importedMarketValueOriginal = normalizeNumber(position.marketValueOriginal);
+  const importedCostBasisOriginal = normalizeNumber(position.costBasisOriginal);
+  const importedUnrealizedGainOriginal = normalizeNumber(position.unrealizedGainOriginal);
+
+  const fallbackMarketValueOriginal = currentPriceOriginal * shares;
+  const fallbackCostBasisOriginal = avgCostOriginal * shares;
+  const fallbackUnrealizedGainOriginal =
+    fallbackMarketValueOriginal - fallbackCostBasisOriginal;
+
+  const marketValueOriginal =
+    importedMarketValueOriginal !== 0
+      ? importedMarketValueOriginal
+      : fallbackMarketValueOriginal;
+
+  const costBasisOriginal =
+    importedCostBasisOriginal !== 0
+      ? importedCostBasisOriginal
+      : fallbackCostBasisOriginal;
+
+  const unrealizedGainOriginal =
+    importedUnrealizedGainOriginal !== 0 || position.unrealizedGainOriginal === 0
+      ? importedUnrealizedGainOriginal
+      : fallbackUnrealizedGainOriginal;
+
   const currentPriceInBase = convertCurrency(
     currentPriceOriginal,
     quoteCurrency,
@@ -144,13 +168,23 @@ const normalizePosition = (position, baseCurrency) => {
     baseCurrency
   );
 
-  const marketValueOriginal = currentPriceOriginal * shares;
-  const costBasisOriginal = avgCostOriginal * shares;
-  const unrealizedGainOriginal = marketValueOriginal - costBasisOriginal;
+  const marketValue = convertCurrency(
+    marketValueOriginal,
+    quoteCurrency,
+    baseCurrency
+  );
 
-  const marketValue = currentPriceInBase * shares;
-  const costBasis = avgCostInBase * shares;
-  const unrealizedGain = marketValue - costBasis;
+  const costBasis = convertCurrency(
+    costBasisOriginal,
+    quoteCurrency,
+    baseCurrency
+  );
+
+  const unrealizedGain = convertCurrency(
+    unrealizedGainOriginal,
+    quoteCurrency,
+    baseCurrency
+  );
 
   return {
     ...position,

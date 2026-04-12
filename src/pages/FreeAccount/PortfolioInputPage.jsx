@@ -211,6 +211,13 @@ const PortfolioInputPage = () => {
       avgCost: Number(String(formData.avgCost).replace(",", ".")),
       annualDividend: Number(String(formData.annualDividend).replace(",", ".")),
       realizedGain: Number(String(formData.realizedGain).replace(",", ".")),
+      unrealizedGainOriginal: 0,
+      marketValueOriginal:
+        Number(String(formData.price).replace(",", ".")) *
+        Number(String(formData.shares).replace(",", ".")),
+      costBasisOriginal:
+        Number(String(formData.avgCost).replace(",", ".")) *
+        Number(String(formData.shares).replace(",", ".")),
     };
   };
 
@@ -276,173 +283,108 @@ const PortfolioInputPage = () => {
     })}`;
   };
 
-  const parseLocaleNumber = (value) => {
-    if (value === null || value === undefined) return null;
+  const parseFlexibleNumber = (value) => {
+    if (value === null || value === undefined) return 0;
 
-    const cleaned = String(value)
-      .replace(/\u00A0/g, "")
-      .replace(/[−–—]/g, "-")
-      .replace(/\s+/g, "")
-      .replace(/%/g, "")
-      .trim();
+    const raw = String(value).trim();
+    if (!raw) return 0;
 
-    if (!cleaned || cleaned === "-" || cleaned === "—") return null;
+    const normalized = raw.replace(/\./g, "").replace(",", ".");
+    const num = Number(normalized);
 
-    const normalized = cleaned.includes(",")
-      ? cleaned.replace(/\./g, "").replace(",", ".")
-      : cleaned;
-
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : null;
+    return Number.isFinite(num) ? num : 0;
   };
 
-  const isTickerLine = (line) =>
-    /^[A-Z0-9.\-]{1,15}$/.test(String(line || "").trim());
+  const isIbkrCurrencyHeader = (line) => {
+    const value = String(line || "").trim().toUpperCase();
+    return [
+      "EUR",
+      "USD",
+      "GBP",
+      "AUD",
+      "CAD",
+      "CHF",
+      "CZK",
+      "DKK",
+      "HKD",
+      "HUF",
+      "JPY",
+      "MXN",
+      "NOK",
+      "NZD",
+      "SEK",
+      "SGD",
+    ].includes(value);
+  };
 
-  const isCurrencyLine = (line) =>
-    /^(USD|EUR|GBP|GBp|GBX|AUD|CAD|CHF|CZK|DKK|HKD|HUF|JPY|MXN|NOK|NZD|SEK|SGD|AED|BRL|CNH|ILS|KRW|MYR|PLN|RON|SAR|TRY|TWD|ZAR)$/i.test(
-      String(line || "").trim()
+  const isIbkrNoiseLine = (line) => {
+    const value = String(line || "").trim();
+
+    if (!value) return true;
+
+    return (
+      value === "Acciones" ||
+      value.startsWith("Total") ||
+      value.includes("Símbolo") ||
+      value.includes("Cantidad") ||
+      value.includes("Precio de coste") ||
+      value.includes("Precio de cierre") ||
+      value.includes("PyG no realizadas") ||
+      value.includes("Código")
     );
-
-  const mapCurrencyAndUnit = (rawCurrency) => {
-    const normalized = String(rawCurrency || "").trim();
-
-    if (normalized.toUpperCase() === "GBP") {
-      return { quoteCurrency: "GBP", quoteUnit: "NORMAL" };
-    }
-
-    if (normalized === "GBp" || normalized.toUpperCase() === "GBX") {
-      return { quoteCurrency: "GBP", quoteUnit: "GBX" };
-    }
-
-    const upper = normalized.toUpperCase();
-
-    return {
-      quoteCurrency: quoteCurrencyOptions.includes(upper) ? upper : "EUR",
-      quoteUnit: "NORMAL",
-    };
   };
 
-  const cleanImportedLines = (rawText) => {
-    return String(rawText || "")
+  const parseIbkrPastedTable = (rawText) => {
+    const lines = String(rawText || "")
       .split(/\r?\n/)
       .map((line) => line.replace(/\t/g, " ").trim())
-      .filter(Boolean)
-      .filter((line) => {
-        const upper = line.toUpperCase();
-        return (
-          !upper.includes("INSTRUMENTO") &&
-          !upper.includes("POSICIÓN") &&
-          !upper.includes("ÚLTIMO") &&
-          !upper.includes("% VARIACI") &&
-          !upper.includes("BASE DE CO") &&
-          !upper.includes("VALOR DE MER") &&
-          !upper.includes("PRECIO MEDI") &&
-          !upper.includes("PYG DIARIAS") &&
-          !upper.includes("PYG NO REALIZA")
-        );
+      .filter(Boolean);
+
+    let currentCurrency = "EUR";
+    const imported = [];
+
+    lines.forEach((line) => {
+      if (isIbkrNoiseLine(line)) return;
+
+      if (isIbkrCurrencyHeader(line)) {
+        currentCurrency = line.trim().toUpperCase();
+        return;
+      }
+
+      const parts = line.split(/\s+/);
+
+      if (parts.length < 8) return;
+
+      const ticker = parts[0]?.trim().toUpperCase();
+
+      if (!/^[A-Z0-9.\-]{1,15}$/.test(ticker)) return;
+
+      const shares = parseFlexibleNumber(parts[1]);
+      const avgCost = parseFlexibleNumber(parts[3]);
+      const costBasis = parseFlexibleNumber(parts[4]);
+      const currentPrice = parseFlexibleNumber(parts[5]);
+      const marketValue = parseFlexibleNumber(parts[6]);
+      const unrealizedGain = parseFlexibleNumber(parts[7]);
+
+      imported.push({
+        id: crypto.randomUUID(),
+        ticker,
+        price: currentPrice,
+        quoteCurrency: currentCurrency,
+        quoteUnit: "NORMAL",
+        sector: "",
+        type: "",
+        shares,
+        avgCost,
+        annualDividend: 0,
+        realizedGain: 0,
+        unrealizedGainOriginal: unrealizedGain,
+        marketValueOriginal: marketValue,
+        costBasisOriginal: costBasis,
       });
-  };
+    });
 
-  const splitBlocksByTicker = (lines) => {
-    const blocks = [];
-    let currentBlock = [];
-
-    for (let i = 0; i < lines.length; i += 1) {
-      const line = lines[i];
-
-      if (isTickerLine(line)) {
-        if (currentBlock.length > 0) {
-          blocks.push(currentBlock);
-        }
-        currentBlock = [line];
-      } else if (currentBlock.length > 0) {
-        currentBlock.push(line);
-      }
-    }
-
-    if (currentBlock.length > 0) {
-      blocks.push(currentBlock);
-    }
-
-    return blocks;
-  };
-
-  const parseMetricsLine = (line) => {
-    const normalized = String(line || "")
-      .replace(/\u00A0/g, " ")
-      .replace(/[−–—]/g, "-")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    const matches = normalized.match(/[+-]?\d+(?:[.,]\d+)?/g);
-
-    if (!matches || matches.length < 4) return null;
-
-    return {
-      shares: parseLocaleNumber(matches[0]),
-      price: parseLocaleNumber(matches[1]),
-      variation: parseLocaleNumber(matches[2]),
-      baseCostTotal: parseLocaleNumber(matches[3]),
-    };
-  };
-
-  const extractCurrencyValuePairs = (block) => {
-    const pairs = [];
-
-    for (let i = 3; i < block.length; i += 1) {
-      const currentLine = String(block[i] || "").trim();
-      const nextLine = String(block[i + 1] || "").trim();
-
-      if (isCurrencyLine(currentLine)) {
-        pairs.push({
-          currency: currentLine,
-          rawValue: nextLine,
-          value: parseLocaleNumber(nextLine),
-        });
-        i += 1;
-      }
-    }
-
-    return pairs;
-  };
-
-  const extractPositionFromBlock = (block) => {
-    if (!Array.isArray(block) || block.length < 7) return null;
-
-    const ticker = String(block[0] || "").trim().toUpperCase();
-    const metrics = parseMetricsLine(block[2]);
-
-    if (!ticker || !metrics || metrics.shares === null || metrics.price === null) {
-      return null;
-    }
-
-    const pairs = extractCurrencyValuePairs(block);
-
-    const marketValuePair = pairs[0] || null;
-    const avgCostPair = pairs[1] || null;
-    const dailyPnLPair = pairs[2] || null;
-    const unrealizedPair = pairs[3] || null;
-
-    const currencyInfo = mapCurrencyAndUnit(
-      avgCostPair?.currency || marketValuePair?.currency || unrealizedPair?.currency || "EUR"
-    );
-
-    return {
-      id: crypto.randomUUID(),
-      ticker,
-      price: metrics.price ?? 0,
-      quoteCurrency: currencyInfo.quoteCurrency,
-      quoteUnit: currencyInfo.quoteUnit,
-      sector: "",
-      type: "",
-      shares: metrics.shares ?? 0,
-      avgCost: avgCostPair?.value ?? 0,
-      annualDividend: 0,
-      realizedGain: unrealizedPair?.value ?? 0,
-      marketValue: marketValuePair?.value ?? 0,
-      dailyPnL: dailyPnLPair?.value ?? 0,
-    };
+    return imported;
   };
 
   const handleAutoFillFromIbkr = () => {
@@ -456,13 +398,9 @@ const PortfolioInputPage = () => {
       return;
     }
 
-    const lines = cleanImportedLines(rawText);
-    const blocks = splitBlocksByTicker(lines);
-    const importedPositions = blocks
-      .map((block) => extractPositionFromBlock(block))
-      .filter(Boolean);
+    const importedPositions = parseIbkrPastedTable(rawText);
 
-    if (importedPositions.length === 0) {
+    if (!importedPositions.length) {
       setImportError("No se han podido detectar posiciones válidas con ese formato.");
       return;
     }
@@ -477,14 +415,11 @@ const PortfolioInputPage = () => {
       if (existingIndex >= 0) {
         updatedPositions[existingIndex] = {
           ...updatedPositions[existingIndex],
-          ticker: importedPosition.ticker,
-          price: importedPosition.price,
-          quoteCurrency: importedPosition.quoteCurrency,
-          quoteUnit: importedPosition.quoteUnit,
-          shares: importedPosition.shares,
-          avgCost: importedPosition.avgCost,
-          realizedGain: importedPosition.realizedGain,
-          annualDividend: 0,
+          ...importedPosition,
+          id: updatedPositions[existingIndex].id,
+          sector: updatedPositions[existingIndex].sector || "",
+          type: updatedPositions[existingIndex].type || "",
+          annualDividend: updatedPositions[existingIndex].annualDividend || 0,
         };
       } else {
         updatedPositions.push(importedPosition);
@@ -959,7 +894,7 @@ const PortfolioInputPage = () => {
                       Gan. Realizada
                     </th>
                     <th className="text-left px-3 py-2.5 text-[12px] font-bold text-[#2f3a56] border-b border-[#e7ebf3]">
-                      Acciones
+                      Gestión
                     </th>
                   </tr>
                 </thead>

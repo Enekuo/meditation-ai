@@ -280,7 +280,6 @@ const DashboardPage = () => {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[0.98fr_1.62fr_0.78fr] gap-4">
-          {/* LEFT COLUMN */}
           <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden">
             <div className="px-4 pt-4 pb-3">
               <p className="text-[13px] font-semibold text-[#3b455e] mb-2">
@@ -401,7 +400,6 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* CENTER COLUMN */}
           <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col">
             <h3 className="text-center text-[16px] font-bold text-[#2f3a56] pt-1">
               ACCIONES
@@ -458,7 +456,6 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-3 py-3 text-center h-[98px] flex flex-col justify-center">
@@ -569,11 +566,9 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-          {/* END RIGHT COLUMN */}
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[0.72fr_1.28fr] gap-4 mt-4">
-          {/* LEFT SIDE */}
           <div className="flex flex-col gap-4">
             <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
@@ -650,7 +645,6 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
@@ -687,42 +681,41 @@ const DashboardPage = () => {
                 Top Ganadoras
               </h3>
 
-<div className="flex-1 min-h-0 overflow-y-auto pr-1">
-  <div className="space-y-2">
-    {topGainers.length ? (
-      topGainers.map((position) => (
-        <div
-          key={position.id || position.ticker}
-          className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
-        >
-          <span className="text-[13px] text-[#3a4560] font-medium">
-            {position.ticker}
-          </span>
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  {topGainers.length ? (
+                    topGainers.map((position) => (
+                      <div
+                        key={position.id || position.ticker}
+                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                      >
+                        <span className="text-[13px] text-[#3a4560] font-medium">
+                          {position.ticker}
+                        </span>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-bold text-[#24304a]">
-              {position.currency || generalData.currency}
-            </span>
-            <span
-              className="text-[13px] font-bold"
-              style={{ color: getAmountColor(position.unrealizedGainOriginal) }}
-            >
-              {Number(position.unrealizedGainOriginal || 0).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
-      ))
-    ) : (
-      <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
-        Sin posiciones
-      </div>
-    )}
-  </div>
-</div>
-
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-bold text-[#24304a]">
+                            {position.currency || generalData.currency}
+                          </span>
+                          <span
+                            className="text-[13px] font-bold"
+                            style={{ color: getAmountColor(position.unrealizedGainOriginal) }}
+                          >
+                            {Number(position.unrealizedGainOriginal || 0).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                      Sin posiciones
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
