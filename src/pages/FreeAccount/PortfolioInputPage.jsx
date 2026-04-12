@@ -283,17 +283,47 @@ const PortfolioInputPage = () => {
     })}`;
   };
 
-  const parseFlexibleNumber = (value) => {
-    if (value === null || value === undefined) return 0;
+const parseFlexibleNumber = (value) => {
+  if (value === null || value === undefined) return 0;
 
-    const raw = String(value).trim();
-    if (!raw) return 0;
+  const raw = String(value).trim();
+  if (!raw) return 0;
 
-    const normalized = raw.replace(/\./g, "").replace(",", ".");
-    const num = Number(normalized);
+  const hasComma = raw.includes(",");
+  const hasDot = raw.includes(".");
 
-    return Number.isFinite(num) ? num : 0;
-  };
+  let normalized = raw;
+
+  if (hasComma && hasDot) {
+    if (raw.lastIndexOf(".") > raw.lastIndexOf(",")) {
+      normalized = raw.replace(/,/g, "");
+    } else {
+      normalized = raw.replace(/\./g, "").replace(",", ".");
+    }
+  } else if (hasComma) {
+    const commaParts = raw.split(",");
+    const decimalDigits = commaParts[commaParts.length - 1]?.length || 0;
+
+    if (decimalDigits > 0 && decimalDigits <= 4) {
+      normalized = raw.replace(/\./g, "").replace(",", ".");
+    } else {
+      normalized = raw.replace(/,/g, "");
+    }
+  } else if (hasDot) {
+    const dotParts = raw.split(".");
+    const decimalDigits = dotParts[dotParts.length - 1]?.length || 0;
+
+    if (decimalDigits === 3 && dotParts.length > 2) {
+      normalized = raw.replace(/\./g, "");
+    } else {
+      normalized = raw;
+    }
+  }
+
+  const num = Number(normalized);
+  return Number.isFinite(num) ? num : 0;
+};
+
 
   const isIbkrCurrencyHeader = (line) => {
     const value = String(line || "").trim().toUpperCase();
