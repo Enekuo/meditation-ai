@@ -12,6 +12,7 @@ import SupportPage from '@/pages/SupportPage';
 import DashboardPage from '@/pages/FreeAccount/DashboardPage';
 import FreeLayout from '@/pages/FreeAccount/FreeLayout';
 import PortfolioInputPage from '@/pages/FreeAccount/PortfolioInputPage';
+import PortfolioPositions from "@/pages/FreeAccount/PortfolioPositions";
 
 function App() {
     const location = useLocation();
@@ -47,6 +48,7 @@ function App() {
                         <Route element={<FreeLayout />}>
                             <Route path="/dashboard" element={<DashboardPage />} />
                             <Route path="/portfolio-input" element={<PortfolioInputPage />} />
+                            <Route path="/portfoliopositions" element={<PortfolioPositions />} />
                         </Route>
                     </Routes>
                 </main>

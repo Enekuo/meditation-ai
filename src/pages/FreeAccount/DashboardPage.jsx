@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   calculatePortfolioTotals,
   calculateSectorDistribution,
@@ -153,6 +154,8 @@ const getPositionMarketValue = (position) => {
 };
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
+
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
   const [holdingsView, setHoldingsView] = useState("donut");
@@ -403,6 +406,14 @@ const DashboardPage = () => {
 
           <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col">
             <div className="relative pt-1">
+              <button
+                type="button"
+                onClick={() => navigate("/portfoliopositions")}
+                className="absolute left-0 top-0 h-8 px-3 rounded-lg border border-[#d9e2f1] bg-white text-[12px] font-semibold text-[#51607f] hover:bg-[#f6f9ff] transition-all"
+              >
+                Agrandar
+              </button>
+
               <h3 className="text-center text-[16px] font-bold text-[#2f3a56]">
                 ACCIONES
               </h3>
