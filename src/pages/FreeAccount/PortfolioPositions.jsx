@@ -51,7 +51,7 @@ export default function PortfolioPositions() {
 
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
-      className="max-w-[1480px] mx-auto px-6 pt-3 pb-5"
+      <div className="max-w-[1480px] mx-auto px-6 pt-3 pb-5">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <div className="w-11 h-1 rounded-full bg-blue-500 mb-2" />
@@ -76,6 +76,6 @@ export default function PortfolioPositions() {
           title="ACCIONES"
         />
       </div>
-   
+    </div>
   );
 }
