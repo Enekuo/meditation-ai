@@ -74,7 +74,7 @@ export default function PortfolioHoldingsChart({
   const isLarge = size === "large";
 
   const wrapperClass = isLarge
-    ? "bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-6 py-5 min-h-[760px] flex flex-col"
+    ? "bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-6 py-5 min-h-[560px] flex flex-col"
     : "bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col";
 
   const titleClass = isLarge
@@ -124,14 +124,14 @@ export default function PortfolioHoldingsChart({
 
       <div
         className={`flex-1 flex flex-col items-center justify-center ${
-          isLarge ? "py-8" : "py-3"
+          isLarge ? "py-4" : "py-3"
         }`}
       >
         {holdingsView === "donut" ? (
           hasPositions ? (
             <div
               className={`relative rounded-full shrink-0 ${
-                isLarge ? "w-[520px] h-[520px]" : "w-[250px] h-[250px]"
+                isLarge ? "w-[340px] h-[340px]" : "w-[250px] h-[250px]"
               }`}
             >
               <div
@@ -140,7 +140,7 @@ export default function PortfolioHoldingsChart({
               />
               <div
                 className={`absolute rounded-full bg-white border border-[#edf1f7] ${
-                  isLarge ? "inset-[135px]" : "inset-[67px]"
+                  isLarge ? "inset-[88px]" : "inset-[67px]"
                 }`}
               />
 
@@ -155,8 +155,8 @@ export default function PortfolioHoldingsChart({
 
                 const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
 
-                const center = isLarge ? 260 : 125;
-                const radius = isLarge ? 322 : 158;
+                const center = isLarge ? 170 : 125;
+                const radius = isLarge ? 212 : 158;
                 const x = center + Math.cos(radians) * radius;
                 const y = center + Math.sin(radians) * radius;
 
@@ -181,12 +181,12 @@ export default function PortfolioHoldingsChart({
           ) : (
             <div
               className={`relative rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center ${
-                isLarge ? "w-[520px] h-[520px]" : "w-[250px] h-[250px]"
+                isLarge ? "w-[340px] h-[340px]" : "w-[250px] h-[250px]"
               }`}
             >
               <div
                 className={`absolute rounded-full bg-white border border-[#e2e8f0] ${
-                  isLarge ? "inset-[135px]" : "inset-[67px]"
+                  isLarge ? "inset-[88px]" : "inset-[67px]"
                 }`}
               />
               <span
