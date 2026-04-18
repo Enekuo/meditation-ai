@@ -5,7 +5,7 @@ import {
   calculateInvestmentTypeDistribution,
   normalizePosition,
 } from "@/lib/portfolioCalculations";
-import PortfolioHoldingsChart from "@/components/PortfolioHoldingsChart";
+import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";

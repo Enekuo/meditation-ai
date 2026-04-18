@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PortfolioHoldingsChart from "@/components/PortfolioHoldingsChart";
+import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";
