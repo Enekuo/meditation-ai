@@ -1,35 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   calculatePortfolioTotals,
   calculateSectorDistribution,
   calculateInvestmentTypeDistribution,
-  calculateTopHoldings,
   normalizePosition,
 } from "@/lib/portfolioCalculations";
+import PortfolioHoldingsChart from "@/components/PortfolioHoldingsChart";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";
-
-const HOLDING_COLORS = [
-  "#26457f",
-  "#4e84ff",
-  "#7aa56d",
-  "#7ab9ff",
-  "#b1965e",
-  "#8c63d8",
-  "#b98bf2",
-  "#79a96a",
-  "#295da8",
-  "#ad6230",
-  "#f3872d",
-  "#a8bfd9",
-  "#85b864",
-  "#488bb8",
-  "#f1ce4b",
-  "#6ab5ff",
-  "#d9bfd9",
-];
 
 const TYPE_COLORS = {
   Especulativa: "#4d7cff",
@@ -108,29 +87,6 @@ const buildConicGradient = (items, colorGetter) => {
   return `conic-gradient(${stops.join(",")})`;
 };
 
-const buildHoldingsGradient = (items) => {
-  if (!items.length) {
-    return "conic-gradient(#e2e8f0 0deg 360deg)";
-  }
-
-  let start = 0;
-  const stops = items.map((item, index) => {
-    const percent = Number(item.weightPercent || 0);
-    const degrees = (percent / 100) * 360;
-    const end = start + degrees;
-    const color = HOLDING_COLORS[index % HOLDING_COLORS.length];
-    const segment = `${color} ${start}deg ${end}deg`;
-    start = end;
-    return segment;
-  });
-
-  if (start < 360) {
-    stops.push(`#e2e8f0 ${start}deg 360deg`);
-  }
-
-  return `conic-gradient(${stops.join(",")})`;
-};
-
 const getPositionMarketValue = (position) => {
   const directValue =
     position?.marketValue ??
@@ -154,11 +110,8 @@ const getPositionMarketValue = (position) => {
 };
 
 const DashboardPage = () => {
-  const navigate = useNavigate();
-
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
-  const [holdingsView, setHoldingsView] = useState("donut");
 
   useEffect(() => {
     const loadData = () => {
@@ -205,11 +158,6 @@ const DashboardPage = () => {
     [positions, generalData.currency]
   );
 
-  const topHoldings = useMemo(
-    () => calculateTopHoldings(positions, 10, generalData.currency),
-    [positions, generalData.currency]
-  );
-
   const concentrationRows = useMemo(() => {
     const normalized = positions.map((position) => {
       const normalizedPosition = normalizePosition(position, generalData.currency);
@@ -253,13 +201,6 @@ const DashboardPage = () => {
         (a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0)
       );
   }, [positions, generalData.currency]);
-
-  const hasPositions = positions.length > 0;
-
-  const holdingsGradient = useMemo(
-    () => buildHoldingsGradient(topHoldings),
-    [topHoldings]
-  );
 
   const typeGradient = buildConicGradient(
     investmentTypes,
@@ -404,154 +345,13 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col">
-            <div className="relative pt-1">
-              <button
-                type="button"
-                onClick={() => navigate("/portfoliopositions")}
-                className="absolute left-0 top-0 h-8 px-3 rounded-lg border border-[#d9e2f1] bg-white text-[12px] font-semibold text-[#51607f] hover:bg-[#f6f9ff] transition-all"
-              >
-                Agrandar
-              </button>
-
-              <h3 className="text-center text-[16px] font-bold text-[#2f3a56]">
-                ACCIONES
-              </h3>
-
-              <div className="absolute right-0 top-0 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setHoldingsView("donut")}
-                  className={`h-8 px-3 rounded-lg text-[12px] font-semibold border transition-all ${
-                    holdingsView === "donut"
-                      ? "bg-[#2f6fed] border-[#2f6fed] text-white"
-                      : "bg-white border-[#d9e2f1] text-[#51607f] hover:bg-[#f6f9ff]"
-                  }`}
-                >
-                  Donut
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setHoldingsView("bars")}
-                  className={`h-8 px-3 rounded-lg text-[12px] font-semibold border transition-all ${
-                    holdingsView === "bars"
-                      ? "bg-[#2f6fed] border-[#2f6fed] text-white"
-                      : "bg-white border-[#d9e2f1] text-[#51607f] hover:bg-[#f6f9ff]"
-                  }`}
-                >
-                  Barras
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center py-3">
-              {holdingsView === "donut" ? (
-                hasPositions ? (
-                  <div className="relative w-[250px] h-[250px] rounded-full shrink-0">
-                    <div
-                      className="w-full h-full rounded-full"
-                      style={{ background: holdingsGradient }}
-                    />
-                    <div className="absolute inset-[67px] rounded-full bg-white border border-[#edf1f7]" />
-
-                    {topHoldings.map((item, index) => {
-                      const angle =
-                        topHoldings
-                          .slice(0, index)
-                          .reduce(
-                            (sum, holding) => sum + Number(holding.weightPercent || 0),
-                            0
-                          ) +
-                        Number(item.weightPercent || 0) / 2;
-
-                      const radians = ((angle / 100) * 360 - 90) * (Math.PI / 180);
-                      const radius = 158;
-                      const x = 125 + Math.cos(radians) * radius;
-                      const y = 125 + Math.sin(radians) * radius;
-
-                      return (
-                        <div
-                          key={item.id || item.ticker}
-                          className="absolute text-[11px] font-semibold whitespace-nowrap"
-                          style={{
-                            left: `${x}px`,
-                            top: `${y}px`,
-                            transform: "translate(-50%, -50%)",
-                            color: HOLDING_COLORS[index % HOLDING_COLORS.length],
-                          }}
-                        >
-                          {item.ticker} {formatCompactPercent(item.weightPercent)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="relative w-[250px] h-[250px] rounded-full bg-[#f1f5f9] border border-[#e2e8f0] flex items-center justify-center">
-                    <div className="absolute inset-[67px] rounded-full bg-white border border-[#e2e8f0]" />
-                    <span className="absolute text-[14px] font-semibold text-[#94a3b8]">
-                      Sin datos
-                    </span>
-                  </div>
-                )
-              ) : hasPositions ? (
-                <div className="w-full max-w-[560px] px-4 py-2">
-                  <div className="space-y-4">
-                    {topHoldings.map((item, index) => (
-                      <div
-                        key={item.id || item.ticker}
-                        className="grid grid-cols-[170px_1fr_64px] items-center gap-4"
-                      >
-                        <div className="text-[13px] font-medium text-[#3a4560] truncate">
-                          {item.ticker}
-                        </div>
-
-                        <div className="h-[24px] rounded-md bg-[#f1f4f9] overflow-hidden border border-[#edf1f7]">
-                          <div
-                            className="h-full flex items-center justify-end pr-2 text-white text-[12px] font-bold rounded-md"
-                            style={{
-                              width: `${Math.max(Number(item.weightPercent || 0), 0)}%`,
-                              backgroundColor:
-                                HOLDING_COLORS[index % HOLDING_COLORS.length],
-                              minWidth:
-                                Number(item.weightPercent || 0) > 0 ? "42px" : "0px",
-                            }}
-                          >
-                            {Number(item.weightPercent || 0) > 0
-                              ? formatCompactPercent(item.weightPercent)
-                              : ""}
-                          </div>
-                        </div>
-
-                        <div className="text-right text-[13px] font-semibold text-[#2f3a56]">
-                          {formatCompactPercent(item.weightPercent)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full max-w-[560px] px-4 py-2">
-                  <div className="space-y-4">
-                    {Array.from({ length: 6 }).map((_, index) => (
-                      <div
-                        key={`empty-bar-${index}`}
-                        className="grid grid-cols-[170px_1fr_64px] items-center gap-4"
-                      >
-                        <div className="text-[13px] font-medium text-[#94a3b8]">
-                          Sin datos
-                        </div>
-                        <div className="h-[24px] rounded-md bg-[#f1f4f9] overflow-hidden border border-[#edf1f7]" />
-                        <div className="text-right text-[13px] font-semibold text-[#94a3b8]">
-                          0.0%
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <PortfolioHoldingsChart
+            positions={positions}
+            currency={generalData.currency}
+            size="small"
+            showExpandButton={true}
+            title="ACCIONES"
+          />
 
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
