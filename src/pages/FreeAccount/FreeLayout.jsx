@@ -167,7 +167,7 @@ export default function FreeLayout() {
           }`}
         >
           <main className="min-h-[calc(100vh-64px)] border-l border-slate-200">
-            <div className="px-8 pt-0 pb-8">
+            <div className="px-6 pt-0 pb-6">
               <Outlet />
             </div>
           </main>

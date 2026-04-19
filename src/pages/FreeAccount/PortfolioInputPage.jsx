@@ -478,7 +478,7 @@ const parseFlexibleNumber = (value) => {
 
   return (
     <div className="min-h-screen bg-[#f5f7fc]">
-      <div className="max-w-[1280px] mx-auto px-4 pt-0 pb-3 -mt-12">
+      <div className="max-w-[1280px] mx-auto px-4 pt-0 pb-3">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <div className="w-9 h-1 rounded-full bg-blue-500 mb-2" />
