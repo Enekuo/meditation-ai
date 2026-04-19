@@ -50,32 +50,30 @@ export default function PortfolioPositions() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f7fc]">
-      <div className="max-w-[1480px] mx-auto px-6 pt-3 pb-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <div className="w-11 h-1 rounded-full bg-blue-500 mb-2" />
-            <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] uppercase">
-              Posiciones De Cartera
-            </h1>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="h-10 px-4 rounded-xl border border-[#d9e2f1] bg-white text-[13px] font-semibold text-[#51607f] hover:bg-[#f6f9ff] transition-all"
-          >
-            Volver
-          </button>
+    <>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <div className="w-11 h-1 rounded-full bg-blue-500 mb-2" />
+          <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] uppercase">
+            Posiciones De Cartera
+          </h1>
         </div>
 
-        <PortfolioHoldingsChart
-          positions={positions}
-          currency={generalData.currency}
-          size="large"
-          title="ACCIONES"
-        />
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard")}
+          className="h-10 px-4 rounded-xl border border-[#d9e2f1] bg-white text-[13px] font-semibold text-[#51607f] hover:bg-[#f6f9ff] transition-all"
+        >
+          Volver
+        </button>
       </div>
-    </div>
+
+      <PortfolioHoldingsChart
+        positions={positions}
+        currency={generalData.currency}
+        size="large"
+        title="ACCIONES"
+      />
+    </>
   );
 }
