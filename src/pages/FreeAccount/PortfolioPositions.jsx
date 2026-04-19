@@ -51,9 +51,9 @@ export default function PortfolioPositions() {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="-mt-14 mb-4 flex items-center justify-between gap-4">
         <div>
-          <div className="w-11 h-1 rounded-full bg-blue-500 mb-2" />
+          <div className="w-11 h-1 rounded-full bg-blue-500 mb-1" />
           <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] uppercase">
             Posiciones De Cartera
           </h1>
