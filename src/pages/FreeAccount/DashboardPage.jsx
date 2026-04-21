@@ -162,30 +162,23 @@ const DashboardPage = () => {
     const normalized = positions.map((position) => {
       const normalizedPosition = normalizePosition(position, generalData.currency);
 
+      const marketValue = getPositionMarketValue({
+        ...normalizedPosition,
+        ...position,
+      });
+
       return {
         ...normalizedPosition,
         currency:
           position.currency || normalizedPosition.currency || generalData.currency,
+        marketValue,
       };
     });
 
-    const investedTotal = Number(totals.positionsValueTotal || 0);
-
-    return normalized
-      .map((position) => {
-        const marketValue = getPositionMarketValue(position);
-        const weightPercent =
-          investedTotal > 0 ? (marketValue / investedTotal) * 100 : 0;
-
-        return {
-          ...position,
-          weightPercent,
-        };
-      })
-      .sort(
-        (a, b) => Number(b.weightPercent || 0) - Number(a.weightPercent || 0)
-      );
-  }, [positions, generalData.currency, totals.positionsValueTotal]);
+    return normalized.sort(
+      (a, b) => Number(b.marketValue || 0) - Number(a.marketValue || 0)
+    );
+  }, [positions, generalData.currency]);
 
   const topGainers = useMemo(() => {
     return positions
@@ -545,7 +538,7 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
               <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
-                Concentración del Portfolio
+                Concentración por Valor de Mercado
               </h3>
 
               <div className="flex-1 min-h-0 overflow-y-auto pr-1">
@@ -560,7 +553,7 @@ const DashboardPage = () => {
                           {position.ticker}
                         </span>
                         <span className="text-[13px] font-bold text-[#24304a]">
-                          {formatCompactPercent(position.weightPercent)}
+                          {formatMoney(position.marketValue, generalData.currency)}
                         </span>
                       </div>
                     ))
