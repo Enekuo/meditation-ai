@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
+import { getOrFetchFxRates } from "@/lib/fxRates";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
 const POSITIONS_STORAGE_KEY = "portfolio_positions";
@@ -18,6 +19,7 @@ export default function PortfolioPositions() {
   const navigate = useNavigate();
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
+  const [fxRates, setFxRates] = useState(null);
 
   useEffect(() => {
     const loadData = () => {
@@ -38,6 +40,7 @@ export default function PortfolioPositions() {
     };
 
     loadData();
+    getOrFetchFxRates().then(setFxRates);
 
     const handleStorage = () => loadData();
     window.addEventListener("storage", handleStorage);
@@ -71,6 +74,7 @@ export default function PortfolioPositions() {
       <PortfolioHoldingsChart
         positions={positions}
         currency={generalData.currency}
+        fxRates={fxRates}
         size="large"
         title="ACCIONES"
       />

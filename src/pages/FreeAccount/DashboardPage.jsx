@@ -5,6 +5,7 @@ import {
   calculateInvestmentTypeDistribution,
   normalizePosition,
 } from "@/lib/portfolioCalculations";
+import { getOrFetchFxRates } from "@/lib/fxRates";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
@@ -87,31 +88,10 @@ const buildConicGradient = (items, colorGetter) => {
   return `conic-gradient(${stops.join(",")})`;
 };
 
-const getPositionMarketValue = (position) => {
-  const directValue =
-    position?.marketValue ??
-    position?.currentValue ??
-    position?.positionValue ??
-    position?.totalValue ??
-    position?.value;
-
-  if (Number.isFinite(Number(directValue))) {
-    return Number(directValue);
-  }
-
-  const shares = Number(
-    position?.shares ?? position?.quantity ?? position?.amount ?? 0
-  );
-  const currentPrice = Number(
-    position?.currentPrice ?? position?.price ?? position?.marketPrice ?? 0
-  );
-
-  return shares * currentPrice;
-};
-
 const DashboardPage = () => {
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
+  const [fxRates, setFxRates] = useState(null);
 
   useEffect(() => {
     const loadData = () => {
@@ -132,6 +112,7 @@ const DashboardPage = () => {
     };
 
     loadData();
+    getOrFetchFxRates().then(setFxRates);
 
     const handleStorage = () => loadData();
     window.addEventListener("storage", handleStorage);
@@ -144,56 +125,35 @@ const DashboardPage = () => {
   }, []);
 
   const totals = useMemo(
-    () => calculatePortfolioTotals(generalData, positions),
-    [generalData, positions]
+    () => calculatePortfolioTotals(generalData, positions, fxRates),
+    [generalData, positions, fxRates]
   );
 
   const sectors = useMemo(
-    () => calculateSectorDistribution(positions, generalData.currency),
-    [positions, generalData.currency]
+    () => calculateSectorDistribution(positions, generalData.currency, fxRates),
+    [positions, generalData.currency, fxRates]
   );
 
   const investmentTypes = useMemo(
-    () => calculateInvestmentTypeDistribution(positions, generalData.currency),
-    [positions, generalData.currency]
+    () => calculateInvestmentTypeDistribution(positions, generalData.currency, fxRates),
+    [positions, generalData.currency, fxRates]
   );
 
   const concentrationRows = useMemo(() => {
-    const normalized = positions.map((position) => {
-      const normalizedPosition = normalizePosition(position, generalData.currency);
-
-      const marketValue = getPositionMarketValue({
-        ...normalizedPosition,
-        ...position,
-      });
-
-      return {
-        ...normalizedPosition,
-        currency:
-          position.currency || normalizedPosition.currency || generalData.currency,
-        marketValue,
-      };
-    });
-
-    return normalized.sort(
-      (a, b) => Number(b.marketValue || 0) - Number(a.marketValue || 0)
-    );
-  }, [positions, generalData.currency]);
+    // normalizePosition converts marketValue to baseCurrency — use it directly.
+    // Previously the spread {...normalizedPosition, ...position} overrode the
+    // converted marketValue with the raw original value, causing incorrect totals
+    // when positions have different currencies.
+    return positions
+      .map((position) => normalizePosition(position, generalData.currency, fxRates))
+      .sort((a, b) => Number(b.marketValue || 0) - Number(a.marketValue || 0));
+  }, [positions, generalData.currency, fxRates]);
 
   const topGainers = useMemo(() => {
     return positions
-      .map((position) => {
-        const normalized = normalizePosition(position, generalData.currency);
-
-        return {
-          ...normalized,
-          currency: position.currency || normalized.currency || generalData.currency,
-        };
-      })
-      .sort(
-        (a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0)
-      );
-  }, [positions, generalData.currency]);
+      .map((position) => normalizePosition(position, generalData.currency, fxRates))
+      .sort((a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0));
+  }, [positions, generalData.currency, fxRates]);
 
   const typeGradient = buildConicGradient(
     investmentTypes,
@@ -341,6 +301,7 @@ const DashboardPage = () => {
           <PortfolioHoldingsChart
             positions={positions}
             currency={generalData.currency}
+            fxRates={fxRates}
             size="small"
             showExpandButton={true}
             title="ACCIONES"
@@ -585,7 +546,7 @@ const DashboardPage = () => {
 
                         <div className="flex items-center gap-1.5">
                           <span className="text-[13px] font-bold text-[#24304a]">
-                            {position.currency || generalData.currency}
+                            {generalData.currency}
                           </span>
                           <span
                             className="text-[13px] font-bold"

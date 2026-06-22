@@ -53,6 +53,7 @@ const buildHoldingsGradient = (items) => {
 export default function PortfolioHoldingsChart({
   positions = [],
   currency = "USD",
+  fxRates = null,
   size = "small",
   showExpandButton = false,
   title = "ACCIONES",
@@ -61,8 +62,8 @@ export default function PortfolioHoldingsChart({
   const [holdingsView, setHoldingsView] = useState("donut");
 
   const topHoldings = useMemo(
-    () => calculateTopHoldings(positions, 10, currency),
-    [positions, currency]
+    () => calculateTopHoldings(positions, 10, currency, fxRates),
+    [positions, currency, fxRates]
   );
 
   const holdingsGradient = useMemo(

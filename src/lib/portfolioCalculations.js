@@ -1,3 +1,5 @@
+import { convertirADivisaBase } from './fxRates.js';
+
 const normalizeNumber = (value) => {
   if (value === null || value === undefined || value === "") return 0;
 
@@ -21,55 +23,14 @@ const normalizeQuotedValue = (value, quoteUnit = "NORMAL") => {
   return num;
 };
 
-
-const FX_RATES_TO_USD = {
-  USD: 1,
-  EUR: 1.1725,
-  GBP: 1.3463,
-  AUD: 0.715,
-  CAD: 0.797,
-  CHF: 1.219,
-  CZK: 0.0469,
-  DKK: 0.1571,
-  HKD: 0.1395,
-  HUF: 0.00293,
-  JPY: 0.00727,
-  MXN: 0.0586,
-  NOK: 0.0997,
-  NZD: 0.656,
-  SEK: 0.1044,
-  SGD: 0.809,
-  AED: 0.296,
-  BRL: 0.199,
-  CNH: 0.150,
-  ILS: 0.293,
-  KRW: 0.000798,
-  MYR: 0.234,
-  PLN: 0.270,
-  RON: 0.234,
-  SAR: 0.291,
-  TRY: 0.0317,
-  TWD: 0.0340,
-  ZAR: 0.0598,
+// convertCurrency is the internal helper — delegates to the central convertirADivisaBase.
+// `rates` comes from getOrFetchFxRates(); if omitted, convertirADivisaBase uses the
+// hardcoded fallback (still better than silent || 1 for unknown currencies).
+const convertCurrency = (value, fromCurrency = "USD", toCurrency = "USD", rates) => {
+  return convertirADivisaBase(normalizeNumber(value), fromCurrency, toCurrency, rates);
 };
 
-const getFxRateToUSD = (currency = "USD") => {
-  return FX_RATES_TO_USD[currency] || 1;
-};
-
-const convertCurrency = (value, fromCurrency = "USD", toCurrency = "USD") => {
-  const amount = normalizeNumber(value);
-
-  if (fromCurrency === toCurrency) return amount;
-
-  const fromRateToUSD = getFxRateToUSD(fromCurrency);
-  const toRateToUSD = getFxRateToUSD(toCurrency);
-
-  const valueInUSD = amount * fromRateToUSD;
-  return valueInUSD / toRateToUSD;
-};
-
-const getPositionPriceInBase = (position, baseCurrency) => {
+const getPositionPriceInBase = (position, baseCurrency, rates) => {
   const normalizedPrice = normalizeQuotedValue(
     position.price,
     position.quoteUnit || "NORMAL"
@@ -78,11 +39,12 @@ const getPositionPriceInBase = (position, baseCurrency) => {
   return convertCurrency(
     normalizedPrice,
     position.quoteCurrency || baseCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 };
 
-const getPositionAvgCostInBase = (position, baseCurrency) => {
+const getPositionAvgCostInBase = (position, baseCurrency, rates) => {
   const normalizedAvgCost = normalizeQuotedValue(
     position.avgCost,
     position.quoteUnit || "NORMAL"
@@ -91,11 +53,12 @@ const getPositionAvgCostInBase = (position, baseCurrency) => {
   return convertCurrency(
     normalizedAvgCost,
     position.quoteCurrency || baseCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 };
 
-const getPositionDividendPerShareInBase = (position, baseCurrency) => {
+const getPositionDividendPerShareInBase = (position, baseCurrency, rates) => {
   const normalizedDividend = normalizeQuotedValue(
     position.annualDividend,
     position.quoteUnit || "NORMAL"
@@ -104,11 +67,12 @@ const getPositionDividendPerShareInBase = (position, baseCurrency) => {
   return convertCurrency(
     normalizedDividend,
     position.quoteCurrency || baseCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 };
 
-const normalizePosition = (position, baseCurrency) => {
+const normalizePosition = (position, baseCurrency, rates) => {
   const shares = normalizeNumber(position.shares);
   const quoteCurrency = position.quoteCurrency || baseCurrency;
 
@@ -156,37 +120,53 @@ const normalizePosition = (position, baseCurrency) => {
   const currentPriceInBase = convertCurrency(
     currentPriceOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 
   const avgCostInBase = convertCurrency(
     avgCostOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 
   const annualDividendPerShareInBase = convertCurrency(
     annualDividendPerShareOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 
   const marketValue = convertCurrency(
     marketValueOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 
   const costBasis = convertCurrency(
     costBasisOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
   );
 
   const unrealizedGain = convertCurrency(
     unrealizedGainOriginal,
     quoteCurrency,
-    baseCurrency
+    baseCurrency,
+    rates
+  );
+
+  // realizedGain is entered in the position's quoteCurrency — must be converted.
+  // Previously this was only normalizeNumber() without currency conversion, causing
+  // incorrect totals when positions have different currencies.
+  const realizedGain = convertCurrency(
+    normalizeNumber(position.realizedGain || 0),
+    quoteCurrency,
+    baseCurrency,
+    rates
   );
 
   return {
@@ -209,7 +189,7 @@ const normalizePosition = (position, baseCurrency) => {
     marketValue,
     costBasis,
     unrealizedGain,
-    realizedGain: normalizeNumber(position.realizedGain || 0),
+    realizedGain,
   };
 };
 
@@ -227,13 +207,13 @@ const buildDistribution = (items, labelKey) => {
     .sort((a, b) => b.value - a.value);
 };
 
-export const calculatePortfolioTotals = (generalData = {}, positions = []) => {
+export const calculatePortfolioTotals = (generalData = {}, positions = [], rates) => {
   const baseCurrency = generalData.currency || "EUR";
   const cash = normalizeNumber(generalData.cash || 0);
   const benchmarkReturn = normalizeNumber(generalData.benchmarkReturn || 0);
 
   const normalizedPositions = positions.map((position) =>
-    normalizePosition(position, baseCurrency)
+    normalizePosition(position, baseCurrency, rates)
   );
 
   const positionsValueTotal = normalizedPositions.reduce(
@@ -298,9 +278,9 @@ export const calculatePortfolioTotals = (generalData = {}, positions = []) => {
   };
 };
 
-export const calculateSectorDistribution = (positions = [], baseCurrency = "EUR") => {
+export const calculateSectorDistribution = (positions = [], baseCurrency = "EUR", rates) => {
   const normalizedPositions = positions.map((position) =>
-    normalizePosition(position, baseCurrency)
+    normalizePosition(position, baseCurrency, rates)
   );
 
   const sectorMap = new Map();
@@ -321,10 +301,11 @@ export const calculateSectorDistribution = (positions = [], baseCurrency = "EUR"
 
 export const calculateInvestmentTypeDistribution = (
   positions = [],
-  baseCurrency = "EUR"
+  baseCurrency = "EUR",
+  rates
 ) => {
   const normalizedPositions = positions.map((position) =>
-    normalizePosition(position, baseCurrency)
+    normalizePosition(position, baseCurrency, rates)
   );
 
   const typeMap = new Map();
@@ -346,10 +327,11 @@ export const calculateInvestmentTypeDistribution = (
 export const calculateTopHoldings = (
   positions = [],
   limit = 10,
-  baseCurrency = "EUR"
+  baseCurrency = "EUR",
+  rates
 ) => {
   const normalizedPositions = positions
-    .map((position) => normalizePosition(position, baseCurrency))
+    .map((position) => normalizePosition(position, baseCurrency, rates))
     .filter((position) => position.marketValue > 0);
 
   const total = normalizedPositions.reduce(
@@ -370,17 +352,18 @@ export const calculateTopHoldings = (
     }));
 };
 
-export const calculateDashboardData = (generalData = {}, positions = []) => {
+export const calculateDashboardData = (generalData = {}, positions = [], rates) => {
   const baseCurrency = generalData.currency || "EUR";
 
   return {
-    totals: calculatePortfolioTotals(generalData, positions),
-    sectors: calculateSectorDistribution(positions, baseCurrency),
+    totals: calculatePortfolioTotals(generalData, positions, rates),
+    sectors: calculateSectorDistribution(positions, baseCurrency, rates),
     investmentTypes: calculateInvestmentTypeDistribution(
       positions,
-      baseCurrency
+      baseCurrency,
+      rates
     ),
-    topHoldings: calculateTopHoldings(positions, 10, baseCurrency),
+    topHoldings: calculateTopHoldings(positions, 10, baseCurrency, rates),
   };
 };
 
