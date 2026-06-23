@@ -421,7 +421,8 @@ const DashboardPage = () => {
                       >
                         <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{position.ticker}</span>
                         <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-100">
-                          {formatMoney(position.marketValue, generalData.currency, locale)}
+                          {/* Show original currency — sort/proportions still use base-currency internally */}
+                          {formatMoney(position.marketValueOriginal, position.quoteCurrency, locale)}
                         </span>
                       </div>
                     ))
@@ -446,14 +447,15 @@ const DashboardPage = () => {
                       >
                         <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{position.ticker}</span>
                         <div className="flex items-center gap-1.5">
+                          {/* Show original currency — ranking order still uses base-currency internally */}
                           <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-400">
-                            {generalData.currency}
+                            {position.quoteCurrency}
                           </span>
                           <span
                             className="text-[13px] font-bold"
-                            style={{ color: getAmountColor(position.unrealizedGain) }}
+                            style={{ color: getAmountColor(position.unrealizedGainOriginal) }}
                           >
-                            {Number(position.unrealizedGain || 0).toLocaleString(locale, {
+                            {Number(position.unrealizedGainOriginal || 0).toLocaleString(locale, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
