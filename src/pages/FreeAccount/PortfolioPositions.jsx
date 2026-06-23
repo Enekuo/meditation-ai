@@ -24,13 +24,8 @@ export default function PortfolioPositions() {
   useEffect(() => {
     const loadData = () => {
       try {
-        const savedGeneral = JSON.parse(
-          localStorage.getItem(GENERAL_STORAGE_KEY) || "{}"
-        );
-        const savedPositions = JSON.parse(
-          localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]"
-        );
-
+        const savedGeneral = JSON.parse(localStorage.getItem(GENERAL_STORAGE_KEY) || "{}");
+        const savedPositions = JSON.parse(localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]");
         setGeneralData({ ...emptyGeneralData, ...savedGeneral });
         setPositions(Array.isArray(savedPositions) ? savedPositions : []);
       } catch {
@@ -45,10 +40,12 @@ export default function PortfolioPositions() {
     const handleStorage = () => loadData();
     window.addEventListener("storage", handleStorage);
     window.addEventListener("focus", loadData);
+    window.addEventListener("portfolio-updated", loadData);
 
     return () => {
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("focus", loadData);
+      window.removeEventListener("portfolio-updated", loadData);
     };
   }, []);
 
@@ -57,7 +54,7 @@ export default function PortfolioPositions() {
       <div className="-mt-14 mb-4 flex items-center justify-between gap-4">
         <div>
           <div className="w-11 h-1 rounded-full bg-blue-500 mb-1" />
-          <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] uppercase">
+          <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] dark:text-gray-100 uppercase">
             Posiciones De Cartera
           </h1>
         </div>
@@ -65,7 +62,7 @@ export default function PortfolioPositions() {
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
-          className="h-10 px-4 rounded-xl border border-[#d9e2f1] bg-white text-[13px] font-semibold text-[#51607f] hover:bg-[#f6f9ff] transition-all"
+          className="h-10 px-4 rounded-xl border border-[#d9e2f1] dark:border-gray-600 bg-white dark:bg-gray-800 text-[13px] font-semibold text-[#51607f] dark:text-gray-300 hover:bg-[#f6f9ff] dark:hover:bg-gray-700 transition-all"
         >
           Volver
         </button>

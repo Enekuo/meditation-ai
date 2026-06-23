@@ -13,10 +13,23 @@ import DashboardPage from '@/pages/FreeAccount/DashboardPage';
 import FreeLayout from '@/pages/FreeAccount/FreeLayout';
 import PortfolioInputPage from '@/pages/FreeAccount/PortfolioInputPage';
 import PortfolioPositions from "@/pages/FreeAccount/PortfolioPositions";
+import AyudaPage from "@/pages/FreeAccount/AyudaPage";
+import AjustesPage from "@/pages/FreeAccount/AjustesPage";
+
+// Routes that use FreeLayout (own header/sidebar) — public Header must not render there
+const FREE_ACCOUNT_PATHS = [
+    '/dashboard',
+    '/portfolio-input',
+    '/portfoliopositions',
+    '/ayuda',
+    '/ajustes',
+];
 
 function App() {
     const location = useLocation();
-    const showHeader = location.pathname !== '/iniciar-sesion' && location.pathname !== '/dashboard';
+    const showHeader =
+        location.pathname !== '/iniciar-sesion' &&
+        !FREE_ACCOUNT_PATHS.some((p) => location.pathname === p);
 
     return (
         <>
@@ -34,7 +47,7 @@ function App() {
                 />
             </Helmet>
 
-            <div className="bg-white text-slate-900">
+            <div className="bg-white dark:bg-gray-950 text-slate-900 dark:text-gray-100">
                 {showHeader && <Header />}
                 <main>
                     <Routes>
@@ -49,6 +62,8 @@ function App() {
                             <Route path="/dashboard" element={<DashboardPage />} />
                             <Route path="/portfolio-input" element={<PortfolioInputPage />} />
                             <Route path="/portfoliopositions" element={<PortfolioPositions />} />
+                            <Route path="/ayuda" element={<AyudaPage />} />
+                            <Route path="/ajustes" element={<AjustesPage />} />
                         </Route>
                     </Routes>
                 </main>

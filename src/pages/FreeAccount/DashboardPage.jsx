@@ -6,6 +6,7 @@ import {
   normalizePosition,
 } from "@/lib/portfolioCalculations";
 import { getOrFetchFxRates } from "@/lib/fxRates";
+import { useSettings } from "@/contexts/SettingsProvider";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
 
 const GENERAL_STORAGE_KEY = "portfolio_general_data";
@@ -19,16 +20,8 @@ const TYPE_COLORS = {
 };
 
 const SECTOR_COLORS = [
-  "#4d7cff",
-  "#72bf69",
-  "#23447d",
-  "#8c63d8",
-  "#f3872d",
-  "#7ab9ff",
-  "#b1965e",
-  "#85b864",
-  "#488bb8",
-  "#f1ce4b",
+  "#4d7cff","#72bf69","#23447d","#8c63d8","#f3872d",
+  "#7ab9ff","#b1965e","#85b864","#488bb8","#f1ce4b",
 ];
 
 const emptyGeneralData = {
@@ -40,22 +33,22 @@ const emptyGeneralData = {
   taxGains: 0,
 };
 
-const formatMoney = (value, currency = "USD") => {
+const formatMoney = (value, currency = "USD", locale = "es-ES") => {
   const num = Number(value || 0);
-  return `${currency} ${num.toLocaleString(undefined, {
+  return `${currency} ${num.toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
-const formatPercent = (value) => {
+const formatPercent = (value, locale = "es-ES") => {
   const num = Number(value || 0);
-  return `${num.toFixed(2)}%`;
+  return `${num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 };
 
-const formatCompactPercent = (value) => {
+const formatCompactPercent = (value, locale = "es-ES") => {
   const num = Number(value || 0);
-  return `${num.toFixed(1)}%`;
+  return `${num.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 };
 
 const getAmountColor = (value) => {
@@ -66,10 +59,7 @@ const getAmountColor = (value) => {
 };
 
 const buildConicGradient = (items, colorGetter) => {
-  if (!items.length) {
-    return "conic-gradient(#e2e8f0 0deg 360deg)";
-  }
-
+  if (!items.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
   let start = 0;
   const stops = items.map((item, index) => {
     const percent = Number(item.percent || 0);
@@ -80,15 +70,15 @@ const buildConicGradient = (items, colorGetter) => {
     start = end;
     return segment;
   });
-
-  if (start < 360) {
-    stops.push(`#e2e8f0 ${start}deg 360deg`);
-  }
-
+  if (start < 360) stops.push(`#e2e8f0 ${start}deg 360deg`);
   return `conic-gradient(${stops.join(",")})`;
 };
 
 const DashboardPage = () => {
+  const { settings } = useSettings();
+  const locale = settings.numberLocale;
+  const showDividends = settings.showDividends;
+
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
   const [fxRates, setFxRates] = useState(null);
@@ -96,13 +86,8 @@ const DashboardPage = () => {
   useEffect(() => {
     const loadData = () => {
       try {
-        const savedGeneral = JSON.parse(
-          localStorage.getItem(GENERAL_STORAGE_KEY) || "{}"
-        );
-        const savedPositions = JSON.parse(
-          localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]"
-        );
-
+        const savedGeneral = JSON.parse(localStorage.getItem(GENERAL_STORAGE_KEY) || "{}");
+        const savedPositions = JSON.parse(localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]");
         setGeneralData({ ...emptyGeneralData, ...savedGeneral });
         setPositions(Array.isArray(savedPositions) ? savedPositions : []);
       } catch {
@@ -114,13 +99,14 @@ const DashboardPage = () => {
     loadData();
     getOrFetchFxRates().then(setFxRates);
 
-    const handleStorage = () => loadData();
-    window.addEventListener("storage", handleStorage);
+    window.addEventListener("storage", loadData);
     window.addEventListener("focus", loadData);
+    window.addEventListener("portfolio-updated", loadData);
 
     return () => {
-      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("storage", loadData);
       window.removeEventListener("focus", loadData);
+      window.removeEventListener("portfolio-updated", loadData);
     };
   }, []);
 
@@ -140,10 +126,6 @@ const DashboardPage = () => {
   );
 
   const concentrationRows = useMemo(() => {
-    // normalizePosition converts marketValue to baseCurrency — use it directly.
-    // Previously the spread {...normalizedPosition, ...position} overrode the
-    // converted marketValue with the raw original value, causing incorrect totals
-    // when positions have different currencies.
     return positions
       .map((position) => normalizePosition(position, generalData.currency, fxRates))
       .sort((a, b) => Number(b.marketValue || 0) - Number(a.marketValue || 0));
@@ -155,40 +137,39 @@ const DashboardPage = () => {
       .sort((a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0));
   }, [positions, generalData.currency, fxRates]);
 
-  const typeGradient = buildConicGradient(
-    investmentTypes,
-    (item) => TYPE_COLORS[item.type] || "#cbd5e1"
-  );
-
-  const sectorGradient = buildConicGradient(
-    sectors,
-    (_, index) => SECTOR_COLORS[index % SECTOR_COLORS.length]
-  );
-
+  const typeGradient = buildConicGradient(investmentTypes, (item) => TYPE_COLORS[item.type] || "#cbd5e1");
+  const sectorGradient = buildConicGradient(sectors, (_, index) => SECTOR_COLORS[index % SECTOR_COLORS.length]);
   const benchmarkLabel = generalData.benchmark || "Benchmark";
 
+  // Dark-mode-aware card shadow
+  const cardClass =
+    "bg-white dark:bg-gray-900 border border-[#e7ebf3] dark:border-gray-700 rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)]";
+
+  const pillClass = "bg-[#eef4ff] dark:bg-gray-800 rounded-xl px-4 py-2 flex items-center justify-between";
+
   return (
-    <div className="min-h-screen bg-[#f5f7fc]">
+    <div className="min-h-screen bg-[#f5f7fc] dark:bg-gray-950">
       <div className="max-w-[1480px] mx-auto px-6 py-5">
         <div className="mb-4">
           <div className="w-11 h-1 rounded-full bg-blue-500 mb-2" />
-          <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] uppercase">
+          <h1 className="text-[18px] md:text-[19px] font-bold tracking-tight text-[#2f3a56] dark:text-gray-100 uppercase">
             Información General Del Portafolio
           </h1>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[0.98fr_1.62fr_0.78fr] gap-4">
-          <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] overflow-hidden">
+          {/* ── Valor actual ── */}
+          <div className={`${cardClass} overflow-hidden`}>
             <div className="px-4 pt-4 pb-3">
-              <p className="text-[13px] font-semibold text-[#3b455e] mb-2">
+              <p className="text-[13px] font-semibold text-[#3b455e] dark:text-gray-300 mb-2">
                 Valor Actual
               </p>
-              <h2 className="text-[28px] leading-none font-bold text-[#202b45] flex items-end gap-2">
-                <span className="text-[16px] font-semibold text-[#6b7280]">
+              <h2 className="text-[28px] leading-none font-bold text-[#202b45] dark:text-gray-100 flex items-end gap-2">
+                <span className="text-[16px] font-semibold text-[#6b7280] dark:text-gray-400">
                   {generalData.currency}
                 </span>
                 <span className="relative top-[2px]">
-                  {Number(totals.portfolioValue || 0).toLocaleString(undefined, {
+                  {Number(totals.portfolioValue || 0).toLocaleString(locale, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -196,99 +177,69 @@ const DashboardPage = () => {
               </h2>
             </div>
 
-            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-center justify-between">
+            <div className="border-t border-[#edf1f7] dark:border-gray-700 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#66c38b] flex items-center justify-center text-white text-sm font-bold">
-                  $
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-[#3b455e]">
-                    Efectivo liquidado
-                  </p>
-                </div>
+                <div className="w-8 h-8 rounded-lg bg-[#66c38b] flex items-center justify-center text-white text-sm font-bold">$</div>
+                <p className="text-[13px] font-semibold text-[#3b455e] dark:text-gray-300">Efectivo liquidado</p>
               </div>
-
-              <div className="text-right">
-                <p className="text-[14px] font-bold text-[#2c3651]">
-                  {formatMoney(totals.cash, generalData.currency)}
-                </p>
-              </div>
+              <p className="text-[14px] font-bold text-[#2c3651] dark:text-gray-100">
+                {formatMoney(totals.cash, generalData.currency, locale)}
+              </p>
             </div>
 
-            <div className="border-t border-[#edf1f7] px-4 py-3 flex items-center justify-between">
+            <div className="border-t border-[#edf1f7] dark:border-gray-700 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#4678df] flex items-center justify-center text-white text-xs font-bold">
-                  ▣
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-[#3b455e] leading-[1.15]">
-                    Cantidad
-                    <br />
-                    Invertida
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-[14px] font-bold text-[#2c3651]">
-                  {formatMoney(totals.positionsValueTotal, generalData.currency)}
+                <div className="w-8 h-8 rounded-lg bg-[#4678df] flex items-center justify-center text-white text-xs font-bold">▣</div>
+                <p className="text-[13px] font-semibold text-[#3b455e] dark:text-gray-300 leading-[1.15]">
+                  Cantidad<br />Invertida
                 </p>
               </div>
+              <p className="text-[14px] font-bold text-[#2c3651] dark:text-gray-100">
+                {formatMoney(totals.positionsValueTotal, generalData.currency, locale)}
+              </p>
             </div>
 
-            <div className="border-t border-[#edf1f7] px-4 py-4">
+            <div className="border-t border-[#edf1f7] dark:border-gray-700 px-4 py-4">
               <div className="flex items-center gap-4">
                 <div className="relative w-[128px] h-[128px] shrink-0">
                   <div
                     className="w-full h-full rounded-full"
                     style={{
                       background: buildConicGradient(
-                        [
-                          { percent: totals.cashWeight },
-                          { percent: totals.investedWeight },
-                        ],
+                        [{ percent: totals.cashWeight }, { percent: totals.investedWeight }],
                         (_, index) => (index === 0 ? "#7ecb9b" : "#4d7cff")
                       ),
                     }}
                   />
-                  <div className="absolute inset-[22px] rounded-full bg-white flex items-center justify-center border border-[#edf1f7]">
-                    <span className="text-[34px] leading-none text-[#94a3b8]">
-                      $
-                    </span>
+                  <div className="absolute inset-[22px] rounded-full bg-white dark:bg-gray-900 flex items-center justify-center border border-[#edf1f7] dark:border-gray-700">
+                    <span className="text-[34px] leading-none text-[#94a3b8]">$</span>
                   </div>
                 </div>
-
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
                       <span className="w-3.5 h-3.5 rounded-full bg-[#7ecb9b]" />
-                      <span className="text-[13px] text-[#3a4560] font-medium">
-                        Efectivo
-                      </span>
+                      <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">Efectivo</span>
                     </div>
-                    <span className="text-[13px] font-semibold text-[#2f3a56]">
-                      {formatCompactPercent(totals.cashWeight)}
+                    <span className="text-[13px] font-semibold text-[#2f3a56] dark:text-gray-100">
+                      {formatCompactPercent(totals.cashWeight, locale)}
                     </span>
                   </div>
-
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
                       <span className="w-3.5 h-3.5 rounded-full bg-[#4d7cff]" />
-                      <span className="text-[13px] text-[#3a4560] font-medium leading-[1.1]">
-                        Cantidad
-                        <br />
-                        Invertida
+                      <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium leading-[1.1]">
+                        Cantidad<br />Invertida
                       </span>
                     </div>
-                    <span className="text-[13px] font-semibold text-[#2f3a56]">
-                      {formatCompactPercent(totals.investedWeight)}
+                    <span className="text-[13px] font-semibold text-[#2f3a56] dark:text-gray-100">
+                      {formatCompactPercent(totals.investedWeight, locale)}
                     </span>
                   </div>
                 </div>
               </div>
-
-              <div className="mt-8 rounded-xl border border-[#e7edf7] bg-[#eef4ff] px-4 py-2 text-center">
-                <p className="text-[12px] font-bold uppercase tracking-wide text-[#35405c]">
+              <div className="mt-8 rounded-xl border border-[#e7edf7] dark:border-gray-700 bg-[#eef4ff] dark:bg-gray-800 px-4 py-2 text-center">
+                <p className="text-[12px] font-bold uppercase tracking-wide text-[#35405c] dark:text-gray-300">
                   Cantidad De Acciones
                 </p>
                 <p className="text-[30px] leading-none mt-1 font-bold text-[#3471e6]">
@@ -298,6 +249,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          {/* ── Holdings chart ── */}
           <PortfolioHoldingsChart
             positions={positions}
             currency={generalData.currency}
@@ -307,82 +259,60 @@ const DashboardPage = () => {
             title="ACCIONES"
           />
 
+          {/* ── Right column ── */}
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-3 py-3 text-center h-[98px] flex flex-col justify-center">
-                <p className="text-[12px] leading-tight font-bold text-[#313b56]">
-                  Dividendos
-                  <br />
-                  Anuales
-                  <br />
-                  Estimados
-                </p>
-                <p className="mt-2 text-[14px] font-bold text-[#24304a]">
-                  {formatMoney(totals.annualDividendsTotal, generalData.currency)}
-                </p>
+            {showDividends && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className={`${cardClass} px-3 py-3 text-center h-[98px] flex flex-col justify-center`}>
+                  <p className="text-[12px] leading-tight font-bold text-[#313b56] dark:text-gray-300">
+                    Dividendos<br />Anuales<br />Estimados
+                  </p>
+                  <p className="mt-2 text-[14px] font-bold text-[#24304a] dark:text-gray-100">
+                    {formatMoney(totals.annualDividendsTotal, generalData.currency, locale)}
+                  </p>
+                </div>
+                <div className={`${cardClass} px-3 py-3 text-center h-[98px] flex flex-col justify-center`}>
+                  <p className="text-[12px] leading-tight font-bold text-[#313b56] dark:text-gray-300">
+                    Yield Del<br />Portafolio
+                  </p>
+                  <p className="mt-2 text-[14px] font-bold text-[#94a3b8]">
+                    {formatPercent(totals.yieldPercent, locale)}
+                  </p>
+                </div>
               </div>
+            )}
 
-              <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-3 py-3 text-center h-[98px] flex flex-col justify-center">
-                <p className="text-[12px] leading-tight font-bold text-[#313b56]">
-                  Yield Del
-                  <br />
-                  Portafolio
-                </p>
-                <p className="mt-2 text-[14px] font-bold text-[#94a3b8]">
-                  {formatPercent(totals.yieldPercent)}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-                Retorno Promedio Anual
-              </h3>
-
+            <div className={`${cardClass} px-4 py-4`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3">Retorno Promedio Anual</h3>
               <div className="space-y-2">
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    Mi Retorno
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatPercent(totals.portfolioReturnPercent)}
+                <div className={pillClass}>
+                  <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">Mi Retorno</span>
+                  <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-100">
+                    {formatPercent(totals.portfolioReturnPercent, locale)}
                   </span>
                 </div>
-
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    {benchmarkLabel}
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatPercent(totals.benchmarkReturn)}
+                <div className={pillClass}>
+                  <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{benchmarkLabel}</span>
+                  <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-100">
+                    {formatPercent(totals.benchmarkReturn, locale)}
                   </span>
                 </div>
-
-                <div className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between">
-                  <span className="text-[13px] text-[#3a4560] font-medium">
-                    Diferencia
-                  </span>
-                  <span className="text-[13px] font-bold text-[#24304a]">
-                    {formatPercent(totals.benchmarkDifference)}
+                <div className={pillClass}>
+                  <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">Diferencia</span>
+                  <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-100">
+                    {formatPercent(totals.benchmarkDifference, locale)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-                Tipo De Inversión
-              </h3>
-
+            <div className={`${cardClass} px-4 py-4`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3">Tipo De Inversión</h3>
               <div className="flex items-center gap-4">
                 <div className="relative w-[112px] h-[112px] shrink-0">
-                  <div
-                    className="w-full h-full rounded-full"
-                    style={{ background: typeGradient }}
-                  />
-                  <div className="absolute inset-[24px] rounded-full bg-white border border-[#edf1f7]" />
+                  <div className="w-full h-full rounded-full" style={{ background: typeGradient }} />
+                  <div className="absolute inset-[24px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700" />
                 </div>
-
                 <div className="space-y-3">
                   {(investmentTypes.length
                     ? investmentTypes
@@ -392,24 +322,16 @@ const DashboardPage = () => {
                         { type: "Dividendos", percent: 0 },
                       ]
                   ).map((item) => (
-                    <div
-                      key={item.type}
-                      className="flex items-center justify-between gap-3 min-w-[160px]"
-                    >
+                    <div key={item.type} className="flex items-center justify-between gap-3 min-w-[160px]">
                       <div className="flex items-center gap-2.5">
                         <span
                           className="w-3.5 h-3.5 rounded-sm"
-                          style={{
-                            backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1",
-                          }}
+                          style={{ backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1" }}
                         />
-                        <span className="text-[13px] text-[#3a4560] font-medium">
-                          {item.type}
-                        </span>
+                        <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{item.type}</span>
                       </div>
-
-                      <span className="text-[13px] font-semibold text-[#2f3a56]">
-                        {formatCompactPercent(item.percent)}
+                      <span className="text-[13px] font-semibold text-[#2f3a56] dark:text-gray-100">
+                        {formatCompactPercent(item.percent, locale)}
                       </span>
                     </div>
                   ))}
@@ -419,46 +341,39 @@ const DashboardPage = () => {
           </div>
         </div>
 
+        {/* ── Segunda fila ── */}
         <div className="grid grid-cols-1 xl:grid-cols-[0.72fr_1.28fr] gap-4 mt-4">
           <div className="flex flex-col gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3">
-                Ganancia/Pérdida
-              </h3>
-
-              <div className="overflow-hidden rounded-xl border border-[#edf1f7]">
-                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb]">
-                  <div className="px-3 py-2 text-[13px] text-[#3a4560] font-medium">
+            {/* Ganancia/Pérdida */}
+            <div className={`${cardClass} px-4 py-4`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3">Ganancia/Pérdida</h3>
+              <div className="overflow-hidden rounded-xl border border-[#edf1f7] dark:border-gray-700">
+                <div className="grid grid-cols-[1fr_auto] bg-[#f4f8fb] dark:bg-gray-800">
+                  <div className="px-3 py-2 text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">
                     Ganancia/Pérdida (sin realizar)
                   </div>
                   <div
                     className="px-3 py-2 text-[13px] font-bold"
                     style={{ color: getAmountColor(totals.unrealizedGainTotal) }}
                   >
-                    {formatMoney(totals.unrealizedGainTotal, generalData.currency)}
+                    {formatMoney(totals.unrealizedGainTotal, generalData.currency, locale)}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[282px] flex flex-col">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
-                Sectores
-              </h3>
-
+            {/* Sectores */}
+            <div className={`${cardClass} px-4 py-4 h-[282px] flex flex-col`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3 shrink-0">Sectores</h3>
               <div className="flex-1 min-h-0 flex items-center justify-center gap-6">
                 <div className="relative w-[118px] h-[118px] shrink-0">
-                  <div
-                    className="w-full h-full rounded-full"
-                    style={{ background: sectorGradient }}
-                  />
-                  <div className="absolute inset-[25px] rounded-full bg-white border border-[#edf1f7] flex items-center justify-center">
+                  <div className="w-full h-full rounded-full" style={{ background: sectorGradient }} />
+                  <div className="absolute inset-[25px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700 flex items-center justify-center">
                     <span className="text-[12px] font-semibold text-[#94a3b8]">
-                      {sectors.length ? formatCompactPercent(sectors[0].percent) : "0.0%"}
+                      {sectors.length ? formatCompactPercent(sectors[0].percent, locale) : "0,0%"}
                     </span>
                   </div>
                 </div>
-
                 <div className="flex-1 min-w-0 h-full overflow-y-auto pr-1">
                   <div className="space-y-3 min-w-[160px]">
                     {sectors.length ? (
@@ -470,25 +385,19 @@ const DashboardPage = () => {
                           <div className="flex items-center gap-2 min-w-0">
                             <span
                               className="w-3.5 h-3.5 rounded-full shrink-0"
-                              style={{
-                                backgroundColor:
-                                  SECTOR_COLORS[index % SECTOR_COLORS.length],
-                              }}
+                              style={{ backgroundColor: SECTOR_COLORS[index % SECTOR_COLORS.length] }}
                             />
-                            <span className="text-[13px] text-[#3a4560] font-medium truncate">
+                            <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium truncate">
                               {sector.name || sector.sector}
                             </span>
                           </div>
-
-                          <span className="text-[13px] font-semibold text-[#2f3a56] shrink-0">
-                            {formatCompactPercent(sector.percent)}
+                          <span className="text-[13px] font-semibold text-[#2f3a56] dark:text-gray-100 shrink-0">
+                            {formatCompactPercent(sector.percent, locale)}
                           </span>
                         </div>
                       ))
                     ) : (
-                      <div className="text-[13px] font-medium text-[#94a3b8]">
-                        Sin sectores
-                      </div>
+                      <div className="text-[13px] font-medium text-[#94a3b8] dark:text-gray-500">Sin sectores</div>
                     )}
                   </div>
                 </div>
@@ -496,30 +405,28 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          {/* Concentración + Top Ganadoras */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
+            <div className={`${cardClass} px-4 py-4 h-[404px] flex flex-col`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3 shrink-0">
                 Concentración por Valor de Mercado
               </h3>
-
               <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                 <div className="space-y-2">
                   {concentrationRows.length ? (
                     concentrationRows.map((position) => (
                       <div
                         key={position.id || position.ticker}
-                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                        className="bg-[#eef4ff] dark:bg-gray-800 rounded-xl px-4 py-2 flex items-center justify-between gap-3"
                       >
-                        <span className="text-[13px] text-[#3a4560] font-medium">
-                          {position.ticker}
-                        </span>
-                        <span className="text-[13px] font-bold text-[#24304a]">
-                          {formatMoney(position.marketValue, generalData.currency)}
+                        <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{position.ticker}</span>
+                        <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-100">
+                          {formatMoney(position.marketValue, generalData.currency, locale)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                    <div className="bg-[#eef4ff] dark:bg-gray-800 rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8] dark:text-gray-500">
                       Sin posiciones
                     </div>
                   )}
@@ -527,32 +434,26 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-[#e7ebf3] rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-4 h-[404px] flex flex-col">
-              <h3 className="text-[15px] font-bold text-[#2f3a56] mb-3 shrink-0">
-                Top Ganadoras
-              </h3>
-
+            <div className={`${cardClass} px-4 py-4 h-[404px] flex flex-col`}>
+              <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3 shrink-0">Top Ganadoras</h3>
               <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                 <div className="space-y-2">
                   {topGainers.length ? (
                     topGainers.map((position) => (
                       <div
                         key={position.id || position.ticker}
-                        className="bg-[#eef4ff] rounded-xl px-4 py-2 flex items-center justify-between gap-3"
+                        className="bg-[#eef4ff] dark:bg-gray-800 rounded-xl px-4 py-2 flex items-center justify-between gap-3"
                       >
-                        <span className="text-[13px] text-[#3a4560] font-medium">
-                          {position.ticker}
-                        </span>
-
+                        <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{position.ticker}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[13px] font-bold text-[#24304a]">
+                          <span className="text-[13px] font-bold text-[#24304a] dark:text-gray-400">
                             {generalData.currency}
                           </span>
                           <span
                             className="text-[13px] font-bold"
                             style={{ color: getAmountColor(position.unrealizedGain) }}
                           >
-                            {Number(position.unrealizedGain || 0).toLocaleString(undefined, {
+                            {Number(position.unrealizedGain || 0).toLocaleString(locale, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
@@ -561,7 +462,7 @@ const DashboardPage = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="bg-[#eef4ff] rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8]">
+                    <div className="bg-[#eef4ff] dark:bg-gray-800 rounded-xl px-4 py-3 text-[13px] font-medium text-[#94a3b8] dark:text-gray-500">
                       Sin posiciones
                     </div>
                   )}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Globe, ChevronDown, LifeBuoy, MessageSquare } from 'lucide-react';
+import { Menu, X, Globe, ChevronDown, LifeBuoy, MessageSquare, Sun, Moon, Monitor } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { useSettings } from '@/contexts/SettingsProvider';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -28,6 +29,13 @@ const Header = () => {
     const [isResourcesMenuOpen, setIsResourcesMenuOpen] = useState(false);
     const { toast } = useToast();
     const { language, setLanguage, t } = useTranslation();
+    const { settings, updateSettings } = useSettings();
+
+    const cycleTheme = () => {
+        const next = settings.theme === 'light' ? 'dark' : settings.theme === 'dark' ? 'system' : 'light';
+        updateSettings({ theme: next });
+    };
+    const ThemeIcon = settings.theme === 'dark' ? Moon : settings.theme === 'light' ? Sun : Monitor;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -177,6 +185,15 @@ const Header = () => {
                 </div>
 
                 <div className="hidden lg:flex items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={cycleTheme}
+                        title={`Tema: ${settings.theme}`}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                        aria-label="Cambiar tema"
+                    >
+                        <ThemeIcon size={18} />
+                    </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                              <button className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
