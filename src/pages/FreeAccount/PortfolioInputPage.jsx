@@ -1,7 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-
-const GENERAL_STORAGE_KEY = "portfolio_general_data";
-const POSITIONS_STORAGE_KEY = "portfolio_positions";
+import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 
 const baseCurrencyOptions = [
   "AUD",
@@ -99,6 +97,14 @@ const sectorOptions = [
 const typeOptions = ["Largo Plazo", "Dividendos", "Especulativa"];
 
 const PortfolioInputPage = () => {
+  const {
+    generalData: ctxGeneralData,
+    positions: ctxPositions,
+    isLoading: ctxLoading,
+    saveGeneralData: ctxSaveGeneralData,
+    savePositions: ctxSavePositions,
+  } = usePortfolioData();
+
   const [generalData, setGeneralData] = useState(emptyGeneralData);
   const [positions, setPositions] = useState([]);
   const [formData, setFormData] = useState(emptyPositionForm);
@@ -109,25 +115,17 @@ const PortfolioInputPage = () => {
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
   const [importMessage, setImportMessage] = useState("");
   const [importError, setImportError] = useState("");
+  const [initDone, setInitDone] = useState(false);
 
   const importEditorRef = useRef(null);
 
   useEffect(() => {
-    const savedGeneral = localStorage.getItem(GENERAL_STORAGE_KEY);
-    const savedPositions = localStorage.getItem(POSITIONS_STORAGE_KEY);
-
-    if (savedGeneral) {
-      try {
-        setGeneralData(JSON.parse(savedGeneral));
-      } catch {}
+    if (!ctxLoading && !initDone) {
+      setGeneralData({ ...emptyGeneralData, ...ctxGeneralData });
+      setPositions(ctxPositions);
+      setInitDone(true);
     }
-
-    if (savedPositions) {
-      try {
-        setPositions(JSON.parse(savedPositions));
-      } catch {}
-    }
-  }, []);
+  }, [ctxLoading, ctxGeneralData, ctxPositions, initDone]);
 
   const totalPositions = positions.length;
 
@@ -149,7 +147,7 @@ const PortfolioInputPage = () => {
   };
 
   const handleSaveGeneralData = () => {
-    localStorage.setItem(GENERAL_STORAGE_KEY, JSON.stringify(generalData));
+    ctxSaveGeneralData(generalData);
     setGeneralSavedMessage("Datos generales guardados correctamente.");
     setTimeout(() => {
       setGeneralSavedMessage("");
@@ -234,7 +232,7 @@ const buildPositionObject = () => {
 
   const persistPositions = (nextPositions) => {
     setPositions(nextPositions);
-    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(nextPositions));
+    ctxSavePositions(nextPositions);
   };
 
   const handleAddOrUpdatePosition = () => {

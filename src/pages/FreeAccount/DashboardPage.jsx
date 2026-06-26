@@ -7,10 +7,8 @@ import {
 } from "@/lib/portfolioCalculations";
 import { getOrFetchFxRates } from "@/lib/fxRates";
 import { useSettings } from "@/contexts/SettingsProvider";
+import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
-
-const GENERAL_STORAGE_KEY = "portfolio_general_data";
-const POSITIONS_STORAGE_KEY = "portfolio_positions";
 
 const TYPE_COLORS = {
   Especulativa: "#4d7cff",
@@ -24,14 +22,6 @@ const SECTOR_COLORS = [
   "#7ab9ff","#b1965e","#85b864","#488bb8","#f1ce4b",
 ];
 
-const emptyGeneralData = {
-  cash: 0,
-  benchmark: "S&P500",
-  benchmarkReturn: 0,
-  currency: "USD",
-  taxDividends: 0,
-  taxGains: 0,
-};
 
 const formatMoney = (value, currency = "USD", locale = "es-ES") => {
   const num = Number(value || 0);
@@ -79,35 +69,11 @@ const DashboardPage = () => {
   const locale = settings.numberLocale;
   const showDividends = settings.showDividends;
 
-  const [generalData, setGeneralData] = useState(emptyGeneralData);
-  const [positions, setPositions] = useState([]);
+  const { generalData, positions } = usePortfolioData();
   const [fxRates, setFxRates] = useState(null);
 
   useEffect(() => {
-    const loadData = () => {
-      try {
-        const savedGeneral = JSON.parse(localStorage.getItem(GENERAL_STORAGE_KEY) || "{}");
-        const savedPositions = JSON.parse(localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]");
-        setGeneralData({ ...emptyGeneralData, ...savedGeneral });
-        setPositions(Array.isArray(savedPositions) ? savedPositions : []);
-      } catch {
-        setGeneralData(emptyGeneralData);
-        setPositions([]);
-      }
-    };
-
-    loadData();
     getOrFetchFxRates().then(setFxRates);
-
-    window.addEventListener("storage", loadData);
-    window.addEventListener("focus", loadData);
-    window.addEventListener("portfolio-updated", loadData);
-
-    return () => {
-      window.removeEventListener("storage", loadData);
-      window.removeEventListener("focus", loadData);
-      window.removeEventListener("portfolio-updated", loadData);
-    };
   }, []);
 
   const totals = useMemo(

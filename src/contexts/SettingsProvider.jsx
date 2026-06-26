@@ -1,12 +1,14 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthProvider';
+import { usePortfolioData } from '@/contexts/PortfolioDataProvider';
+import { fsUpdateSettings } from '@/lib/firestoreService';
 
 const SETTINGS_KEY = 'portfolio_settings';
-const GENERAL_KEY = 'portfolio_general_data';
 
 const DEFAULT_SETTINGS = {
-  theme: 'system',         // 'light' | 'dark' | 'system'
-  numberLocale: 'es-ES',   // 'es-ES' | 'en-US'
-  defaultChartView: 'donut', // 'donut' | 'bars'
+  theme: 'system',
+  numberLocale: 'es-ES',
+  defaultChartView: 'donut',
   showDividends: true,
 };
 
@@ -27,15 +29,6 @@ const readSettings = () => {
   }
 };
 
-const readBaseCurrency = () => {
-  try {
-    const general = JSON.parse(localStorage.getItem(GENERAL_KEY) || '{}');
-    return general.currency || 'EUR';
-  } catch {
-    return 'EUR';
-  }
-};
-
 const getSystemTheme = () =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
@@ -46,17 +39,16 @@ const applyTheme = (theme) => {
 };
 
 export function SettingsProvider({ children }) {
+  const { user } = useAuth();
+  const { generalData, saveGeneralData } = usePortfolioData();
   const [settings, setSettings] = useState(readSettings);
-  const [baseCurrency, setBaseCurrencyState] = useState(readBaseCurrency);
   const [effectiveTheme, setEffectiveTheme] = useState(() => applyTheme(readSettings().theme));
 
-  // Apply theme whenever it changes
   useEffect(() => {
     const effective = applyTheme(settings.theme);
     setEffectiveTheme(effective);
   }, [settings.theme]);
 
-  // Follow system preference when theme is 'system'
   useEffect(() => {
     if (settings.theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -68,30 +60,28 @@ export function SettingsProvider({ children }) {
     return () => mq.removeEventListener('change', handler);
   }, [settings.theme]);
 
-  // Sync baseCurrency if portfolio_general_data changes from another component
-  useEffect(() => {
-    const handleUpdated = () => setBaseCurrencyState(readBaseCurrency());
-    window.addEventListener('portfolio-updated', handleUpdated);
-    return () => window.removeEventListener('portfolio-updated', handleUpdated);
-  }, []);
+  const updateSettings = useCallback(
+    (partial) => {
+      setSettings((prev) => {
+        const next = { ...prev, ...partial };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+        if (user) {
+          fsUpdateSettings(user.uid, next).catch(() => {});
+        }
+        return next;
+      });
+    },
+    [user]
+  );
 
-  const updateSettings = useCallback((partial) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...partial };
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+  const baseCurrency = generalData.currency || 'EUR';
 
-  const updateBaseCurrency = useCallback((currency) => {
-    try {
-      const general = JSON.parse(localStorage.getItem(GENERAL_KEY) || '{}');
-      const updated = { ...general, currency };
-      localStorage.setItem(GENERAL_KEY, JSON.stringify(updated));
-    } catch { /* ignore */ }
-    setBaseCurrencyState(currency);
-    window.dispatchEvent(new CustomEvent('portfolio-updated'));
-  }, []);
+  const updateBaseCurrency = useCallback(
+    (currency) => {
+      saveGeneralData({ ...generalData, currency });
+    },
+    [generalData, saveGeneralData]
+  );
 
   return (
     <SettingsContext.Provider

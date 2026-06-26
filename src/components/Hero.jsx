@@ -19,8 +19,8 @@ const Hero = () => {
   };
 
   return (
-    <section className="bg-white">
-      <div className="relative w-full overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(225,239,255,0.22),rgba(255,255,255,0))]">
+    <section className="bg-white dark:bg-gray-950">
+      <div className="relative w-full overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(225,239,255,0.22),rgba(255,255,255,0))] dark:bg-none">
         <div className="mx-auto max-w-6xl px-5 md:px-8 py-12 md:py-16">
           <motion.div
             className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12 min-h-[62vh]"
@@ -30,14 +30,14 @@ const Hero = () => {
           >
             <div className="text-left">
               <motion.h1
-                className="text-slate-900 tracking-tight font-extrabold leading-[1.06] text-4xl md:text-5xl lg:text-[44px] max-w-xl"
+                className="text-slate-900 dark:text-white tracking-tight font-extrabold leading-[1.06] text-4xl md:text-5xl lg:text-[44px] max-w-xl"
                 variants={item}
               >
                 Controla tu cartera de inversión desde un solo lugar
               </motion.h1>
 
               <motion.p
-                className="mt-4 text-slate-600 text-base md:text-lg leading-relaxed max-w-md"
+                className="mt-4 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed max-w-md"
                 variants={item}
               >
                 Visualiza el rendimiento de tus inversiones con métricas claras y gráficas interactivas, monitorea tus activos y recibe resúmenes detallados fácilmente.
@@ -71,8 +71,8 @@ const Hero = () => {
                     />
                   ))}
                 </div>
-                <p className="text-sm text-slate-500">
-                  <span className="font-semibold text-slate-600">4.5/5.0</span> · {t('hero.compliance')}
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <span className="font-semibold text-slate-600 dark:text-slate-300">4.5/5.0</span> · {t('hero.compliance')}
                 </p>
               </motion.div>
             </div>

@@ -73,14 +73,14 @@ const Header = () => {
     const resources = [
         {
             name: t('resourcesMenu.support'),
-            icon: <LifeBuoy size={16} className="mr-2 text-slate-500" />,
+            icon: <LifeBuoy size={16} className="mr-2 text-slate-500 dark:text-slate-400" />,
             isLink: true,
             path: '/soporte',
             action: handleSupportClick
         },
         {
             name: t('resourcesMenu.aiChat'),
-            icon: <MessageSquare size={16} className="mr-2 text-slate-500" />,
+            icon: <MessageSquare size={16} className="mr-2 text-slate-500 dark:text-slate-400" />,
             action: handleFeatureClick
         }
     ];
@@ -97,7 +97,7 @@ const Header = () => {
                             if (isMobileMenuOpen) setIsMobileMenuOpen(false);
                             setIsResourcesMenuOpen(false);
                         }}
-                        className="w-full text-left flex items-center p-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        className="w-full text-left flex items-center p-2 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-gray-700 focus-visible:bg-slate-100 dark:focus-visible:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                     >
                         {item.icon}
                         {item.name}
@@ -110,7 +110,7 @@ const Header = () => {
                             if (isMobileMenuOpen) setIsMobileMenuOpen(false);
                             setIsResourcesMenuOpen(false);
                         }}
-                        className="w-full text-left flex items-center p-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        className="w-full text-left flex items-center p-2 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-gray-700 focus-visible:bg-slate-100 dark:focus-visible:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                     >
                         {item.icon}
                         {item.name}
@@ -121,7 +121,7 @@ const Header = () => {
     );
 
     return (
-        <header className={`sticky top-0 z-50 w-full bg-white transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : 'border-b border-slate-200/80'}`}>
+        <header className={`sticky top-0 z-50 w-full bg-white dark:bg-gray-900 transition-shadow duration-300 ${isScrolled ? 'shadow-sm dark:shadow-gray-900/50' : 'border-b border-slate-200/80 dark:border-gray-700/80'}`}>
             <div className="max-w-7xl mx-auto flex items-center justify-between h-20 px-6 lg:px-8">
                 
                 <div className="flex items-center gap-[150px]">
@@ -135,7 +135,7 @@ const Header = () => {
                             alt="Portfolio Controller logo"
                             className="w-16 h-12 object-contain shrink-0"
                         />
-                        <span className="text-[16px] font-bold text-slate-900 tracking-tight uppercase leading-none -mt-2">
+                        <span className="text-[16px] font-bold text-slate-900 dark:text-white tracking-tight uppercase leading-none -mt-2">
                             Portfolio Controller
                         </span>
                     </Link>
@@ -145,7 +145,7 @@ const Header = () => {
                             <button
                                 key={item.name}
                                 onClick={item.action}
-                                className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md"
+                                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors h-10 px-3 rounded-md"
                             >
                                 {item.name}
                             </button>
@@ -155,19 +155,19 @@ const Header = () => {
                             <DropdownMenuTrigger asChild>
                                 <button 
                                   onPointerEnter={() => setIsResourcesMenuOpen(true)}
-                                  className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                                  className="flex items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors h-10 px-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                                 >
                                     {t('header.resources')}
                                     <ChevronDown size={16} className={`transition-transform duration-200 ${isResourcesMenuOpen ? 'rotate-180' : ''}`} />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent 
+                            <DropdownMenuContent
                               onPointerLeave={() => setIsResourcesMenuOpen(false)}
-                              className="bg-white rounded-xl shadow-lg border border-slate-200 mt-2" 
+                              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 mt-2"
                               align="start"
                               sideOffset={8}
                             >
-                              <DropdownMenuArrow className="fill-white stroke-slate-200" width={16} height={8} />
+                              <DropdownMenuArrow className="fill-white stroke-slate-200 dark:fill-gray-800 dark:stroke-gray-700" width={16} height={8} />
                               <ResourcesDropdownContent />
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -176,7 +176,7 @@ const Header = () => {
                             <button
                                 key={item.name}
                                 onClick={item.action}
-                                className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors h-10 px-3 rounded-md"
+                                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors h-10 px-3 rounded-md"
                             >
                                 {item.name}
                             </button>
@@ -189,29 +189,29 @@ const Header = () => {
                         type="button"
                         onClick={cycleTheme}
                         title={`Tema: ${settings.theme}`}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
                         aria-label="Cambiar tema"
                     >
                         <ThemeIcon size={18} />
                     </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                             <button className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
+                             <button className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 <Globe size={16} />
                                 {language}
                                 <ChevronDown size={16} className="opacity-70" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 bg-white rounded-lg shadow-lg border border-slate-200 mt-2">
+                        <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-slate-200 dark:border-gray-700 mt-2">
                             {languages.map(lang => (
-                                <DropdownMenuItem key={lang.code} onSelect={() => handleLanguageChange(lang.code)} className="px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100 cursor-pointer">
+                                <DropdownMenuItem key={lang.code} onSelect={() => handleLanguageChange(lang.code)} className="px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 cursor-pointer">
                                     {lang.name}
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Link to="/iniciar-sesion" className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
+                    <Link to="/iniciar-sesion" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
                         {t('header.signIn')}
                     </Link>
 
@@ -226,7 +226,7 @@ const Header = () => {
                 </div>
                 
                 <div className="lg:hidden">
-                    <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-800">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-800 dark:text-slate-200">
                         <Menu size={24} />
                     </button>
                 </div>
@@ -239,9 +239,9 @@ const Header = () => {
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="fixed inset-0 z-[100] bg-white lg:hidden"
+                        className="fixed inset-0 z-[100] bg-white dark:bg-gray-900 lg:hidden"
                     >
-                        <div className="flex justify-between items-center h-16 px-4 border-b border-slate-200">
+                        <div className="flex justify-between items-center h-16 px-4 border-b border-slate-200 dark:border-gray-700">
                             <Link
                                 to="/"
                                 onClick={() => setIsMobileMenuOpen(false)}
@@ -253,12 +253,12 @@ const Header = () => {
                                     alt="Portfolio Controller logo"
                                     className="w-10 h-10 object-contain shrink-0"
                                 />
-                                <span className="text-xl font-bold text-slate-900 tracking-tight leading-none">
+                                <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                                     Portfolio Controller
                                 </span>
                             </Link>
                             <button onClick={() => setIsMobileMenuOpen(false)}>
-                                <X size={24} className="text-slate-800" />
+                                <X size={24} className="text-slate-800 dark:text-slate-200" />
                             </button>
                         </div>
 
@@ -266,21 +266,21 @@ const Header = () => {
                             <div className="flex flex-col gap-1">
                                 <button
                                     onClick={handleFeatureClick}
-                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 transition-colors"
+                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
                                 >
                                     Por qué PFLR
                                 </button>
 
                                 <div className="px-2 my-1"><DropdownMenuSeparator /></div>
 
-                                <p className="px-2 text-sm font-semibold text-slate-500 mt-2 mb-1">{t('header.resources')}</p>
+                                <p className="px-2 text-sm font-semibold text-slate-500 dark:text-slate-400 mt-2 mb-1">{t('header.resources')}</p>
                                 <div className="px-2">
                                   <ResourcesDropdownContent inMobileMenu={true} />
                                 </div>
-                                
+
                                 <button
                                     onClick={handleFeatureClick}
-                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 transition-colors"
+                                    className="w-full text-left text-base font-medium h-12 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
                                 >
                                     {t('header.pricing')}
                                 </button>
@@ -289,22 +289,22 @@ const Header = () => {
                             <div className="mt-auto flex flex-col gap-4">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="flex items-center justify-center gap-2 text-base h-12 w-full font-medium rounded-md hover:bg-slate-100 transition-colors">
+                                        <button className="flex items-center justify-center gap-2 text-base h-12 w-full font-medium rounded-md hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors">
                                             <Globe size={18} />
                                             <span>{languages.find(l => l.code === language).name}</span>
                                             <ChevronDown size={16} />
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="center" className="w-56 bg-white">
+                                    <DropdownMenuContent align="center" className="w-56 bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700">
                                         {languages.map(lang => (
-                                            <DropdownMenuItem key={lang.code} onSelect={() => handleLanguageChange(lang.code)} className="text-base py-2.5 px-4 hover:bg-slate-100 cursor-pointer">
+                                            <DropdownMenuItem key={lang.code} onSelect={() => handleLanguageChange(lang.code)} className="text-base py-2.5 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-700 cursor-pointer">
                                                 {lang.name}
                                             </DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                                
-                                <Link to="/iniciar-sesion" onClick={() => setIsMobileMenuOpen(false)} className="h-12 w-full text-base font-medium rounded-md hover:bg-slate-100 transition-colors flex items-center justify-center">
+
+                                <Link to="/iniciar-sesion" onClick={() => setIsMobileMenuOpen(false)} className="h-12 w-full text-base font-medium rounded-md hover:bg-slate-100 dark:hover:bg-gray-800 dark:text-slate-300 transition-colors flex items-center justify-center">
                                     {t('header.signIn')}
                                 </Link>
 

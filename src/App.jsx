@@ -15,6 +15,7 @@ import PortfolioInputPage from '@/pages/FreeAccount/PortfolioInputPage';
 import PortfolioPositions from "@/pages/FreeAccount/PortfolioPositions";
 import AyudaPage from "@/pages/FreeAccount/AyudaPage";
 import AjustesPage from "@/pages/FreeAccount/AjustesPage";
+import GuestMigrationModal from "@/components/GuestMigrationModal";
 
 // Routes that use FreeLayout (own header/sidebar) — public Header must not render there
 const FREE_ACCOUNT_PATHS = [
@@ -67,6 +68,7 @@ function App() {
                         </Route>
                     </Routes>
                 </main>
+                <GuestMigrationModal />
                 <Toaster />
             </div>
         </>

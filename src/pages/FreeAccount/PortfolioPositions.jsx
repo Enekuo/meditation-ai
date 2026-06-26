@@ -2,51 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
 import { getOrFetchFxRates } from "@/lib/fxRates";
-
-const GENERAL_STORAGE_KEY = "portfolio_general_data";
-const POSITIONS_STORAGE_KEY = "portfolio_positions";
-
-const emptyGeneralData = {
-  cash: 0,
-  benchmark: "S&P500",
-  benchmarkReturn: 0,
-  currency: "USD",
-  taxDividends: 0,
-  taxGains: 0,
-};
+import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 
 export default function PortfolioPositions() {
   const navigate = useNavigate();
-  const [generalData, setGeneralData] = useState(emptyGeneralData);
-  const [positions, setPositions] = useState([]);
+  const { generalData, positions } = usePortfolioData();
   const [fxRates, setFxRates] = useState(null);
 
   useEffect(() => {
-    const loadData = () => {
-      try {
-        const savedGeneral = JSON.parse(localStorage.getItem(GENERAL_STORAGE_KEY) || "{}");
-        const savedPositions = JSON.parse(localStorage.getItem(POSITIONS_STORAGE_KEY) || "[]");
-        setGeneralData({ ...emptyGeneralData, ...savedGeneral });
-        setPositions(Array.isArray(savedPositions) ? savedPositions : []);
-      } catch {
-        setGeneralData(emptyGeneralData);
-        setPositions([]);
-      }
-    };
-
-    loadData();
     getOrFetchFxRates().then(setFxRates);
-
-    const handleStorage = () => loadData();
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("focus", loadData);
-    window.addEventListener("portfolio-updated", loadData);
-
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("focus", loadData);
-      window.removeEventListener("portfolio-updated", loadData);
-    };
   }, []);
 
   return (
