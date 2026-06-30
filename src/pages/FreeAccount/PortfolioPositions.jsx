@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
+import PremiumModal from "@/components/PremiumModal";
 import { getOrFetchFxRates } from "@/lib/fxRates";
 import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 
@@ -8,6 +9,7 @@ export default function PortfolioPositions() {
   const navigate = useNavigate();
   const { generalData, positions } = usePortfolioData();
   const [fxRates, setFxRates] = useState(null);
+  const [premiumModalOpen, setPremiumModalOpen] = useState(false);
 
   useEffect(() => {
     getOrFetchFxRates().then(setFxRates);
@@ -38,6 +40,13 @@ export default function PortfolioPositions() {
         fxRates={fxRates}
         size="large"
         title="ACCIONES"
+        onOtrosClick={() => setPremiumModalOpen(true)}
+      />
+
+      <PremiumModal
+        open={premiumModalOpen}
+        positionCount={positions.length}
+        onClose={() => setPremiumModalOpen(false)}
       />
     </>
   );

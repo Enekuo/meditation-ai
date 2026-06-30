@@ -9,17 +9,18 @@ import { getOrFetchFxRates } from "@/lib/fxRates";
 import { useSettings } from "@/contexts/SettingsProvider";
 import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 import PortfolioHoldingsChart from "@/pages/FreeAccount/PortfolioHoldingsChart";
+import PremiumModal from "@/components/PremiumModal";
 
 const TYPE_COLORS = {
-  Especulativa: "#4d7cff",
-  "Largo Plazo": "#72bf69",
-  Dividendos: "#23447d",
-  "Sin tipo": "#cbd5e1",
+  Especulativa: "#2a78d6",
+  "Largo Plazo": "#1baf7a",
+  Dividendos: "#4a3aa7",
+  "Sin tipo": "#94a3b8",
 };
 
 const SECTOR_COLORS = [
-  "#4d7cff","#72bf69","#23447d","#8c63d8","#f3872d",
-  "#7ab9ff","#b1965e","#85b864","#488bb8","#f1ce4b",
+  "#2a78d6","#1baf7a","#eda100","#4a3aa7","#e87ba4","#eb6834",
+  "#5b9ee0","#3dc492","#f5b938","#7560bc",
 ];
 
 
@@ -48,21 +49,25 @@ const getAmountColor = (value) => {
   return "#94a3b8";
 };
 
-const buildConicGradient = (items, colorGetter) => {
+const buildConicGradient = (items, colorGetter, gapDeg = 0, gapColor = "#ffffff") => {
   if (!items.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
   let start = 0;
-  const stops = items.map((item, index) => {
+  const stops = [];
+  items.forEach((item, index) => {
     const percent = Number(item.percent || 0);
     const degrees = (percent / 100) * 360;
-    const end = start + degrees;
     const color = colorGetter(item, index);
-    const segment = `${color} ${start}deg ${end}deg`;
-    start = end;
-    return segment;
+    const isLast = index === items.length - 1;
+    const gap = (!isLast && gapDeg > 0 && degrees > gapDeg * 2) ? gapDeg : 0;
+    stops.push(`${color} ${start}deg ${start + degrees - gap}deg`);
+    if (gap > 0) stops.push(`${gapColor} ${start + degrees - gap}deg ${start + degrees}deg`);
+    start = start + degrees;
   });
   if (start < 360) stops.push(`#e2e8f0 ${start}deg 360deg`);
   return `conic-gradient(${stops.join(",")})`;
 };
+
+
 
 const DashboardPage = () => {
   const { settings } = useSettings();
@@ -75,6 +80,10 @@ const DashboardPage = () => {
   useEffect(() => {
     getOrFetchFxRates().then(setFxRates);
   }, []);
+
+  const activePositions = positions;
+
+  const [premiumModalOpen, setPremiumModalOpen] = useState(false);
 
   const totals = useMemo(
     () => calculatePortfolioTotals(generalData, positions, fxRates),
@@ -103,8 +112,10 @@ const DashboardPage = () => {
       .sort((a, b) => Number(b.unrealizedGain || 0) - Number(a.unrealizedGain || 0));
   }, [positions, generalData.currency, fxRates]);
 
-  const typeGradient = buildConicGradient(investmentTypes, (item) => TYPE_COLORS[item.type] || "#cbd5e1");
-  const sectorGradient = buildConicGradient(sectors, (_, index) => SECTOR_COLORS[index % SECTOR_COLORS.length]);
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const cardBg = isDark ? '#111827' : '#ffffff';
+  const typeGradient = buildConicGradient(investmentTypes, (item) => TYPE_COLORS[item.type] || "#94a3b8", 2, cardBg);
+  const sectorGradient = buildConicGradient(sectors, (_, index) => SECTOR_COLORS[index % SECTOR_COLORS.length], 2, cardBg);
   const benchmarkLabel = generalData.benchmark || "Benchmark";
 
   // Dark-mode-aware card shadow
@@ -167,24 +178,26 @@ const DashboardPage = () => {
 
             <div className="border-t border-[#edf1f7] dark:border-gray-700 px-4 py-4">
               <div className="flex items-center gap-4">
-                <div className="relative w-[128px] h-[128px] shrink-0">
+                <div className="relative w-[128px] h-[128px] shrink-0 transition-transform duration-300 hover:scale-[1.04] cursor-pointer">
                   <div
                     className="w-full h-full rounded-full"
                     style={{
                       background: buildConicGradient(
                         [{ percent: totals.cashWeight }, { percent: totals.investedWeight }],
-                        (_, index) => (index === 0 ? "#7ecb9b" : "#4d7cff")
+                        (_, index) => (index === 0 ? "#1baf7a" : "#2a78d6"),
+                        2,
+                        cardBg
                       ),
                     }}
                   />
-                  <div className="absolute inset-[22px] rounded-full bg-white dark:bg-gray-900 flex items-center justify-center border border-[#edf1f7] dark:border-gray-700">
+                  <div className="absolute inset-[18px] rounded-full bg-white dark:bg-gray-900 flex items-center justify-center border border-[#edf1f7] dark:border-gray-700">
                     <span className="text-[34px] leading-none text-[#94a3b8]">$</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#7ecb9b]" />
+                      <span className="w-2 h-2 rounded-[2px] bg-[#1baf7a] shrink-0" />
                       <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">Efectivo</span>
                     </div>
                     <span className="text-[13px] font-semibold text-[#2f3a56] dark:text-gray-100">
@@ -193,7 +206,7 @@ const DashboardPage = () => {
                   </div>
                   <div className="flex items-center justify-between gap-4 min-w-[130px]">
                     <div className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#4d7cff]" />
+                      <span className="w-2 h-2 rounded-[2px] bg-[#2a78d6] shrink-0" />
                       <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium leading-[1.1]">
                         Cantidad<br />Invertida
                       </span>
@@ -217,12 +230,13 @@ const DashboardPage = () => {
 
           {/* ── Holdings chart ── */}
           <PortfolioHoldingsChart
-            positions={positions}
+            positions={activePositions}
             currency={generalData.currency}
             fxRates={fxRates}
             size="small"
             showExpandButton={true}
             title="ACCIONES"
+            onOtrosClick={() => setPremiumModalOpen(true)}
           />
 
           {/* ── Right column ── */}
@@ -275,9 +289,9 @@ const DashboardPage = () => {
             <div className={`${cardClass} px-4 py-4`}>
               <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3">Tipo De Inversión</h3>
               <div className="flex items-center gap-4">
-                <div className="relative w-[112px] h-[112px] shrink-0">
+                <div className="relative w-[112px] h-[112px] shrink-0 transition-transform duration-300 hover:scale-[1.04] cursor-pointer">
                   <div className="w-full h-full rounded-full" style={{ background: typeGradient }} />
-                  <div className="absolute inset-[24px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700" />
+                  <div className="absolute inset-[16px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700" />
                 </div>
                 <div className="space-y-3">
                   {(investmentTypes.length
@@ -291,8 +305,8 @@ const DashboardPage = () => {
                     <div key={item.type} className="flex items-center justify-between gap-3 min-w-[160px]">
                       <div className="flex items-center gap-2.5">
                         <span
-                          className="w-3.5 h-3.5 rounded-sm"
-                          style={{ backgroundColor: TYPE_COLORS[item.type] || "#cbd5e1" }}
+                          className="w-2 h-2 rounded-[2px]"
+                          style={{ backgroundColor: TYPE_COLORS[item.type] || "#94a3b8" }}
                         />
                         <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium">{item.type}</span>
                       </div>
@@ -332,9 +346,9 @@ const DashboardPage = () => {
             <div className={`${cardClass} px-4 py-4 h-[282px] flex flex-col`}>
               <h3 className="text-[15px] font-bold text-[#2f3a56] dark:text-gray-100 mb-3 shrink-0">Sectores</h3>
               <div className="flex-1 min-h-0 flex items-center justify-center gap-6">
-                <div className="relative w-[118px] h-[118px] shrink-0">
+                <div className="relative w-[118px] h-[118px] shrink-0 transition-transform duration-300 hover:scale-[1.04] cursor-pointer">
                   <div className="w-full h-full rounded-full" style={{ background: sectorGradient }} />
-                  <div className="absolute inset-[25px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700 flex items-center justify-center">
+                  <div className="absolute inset-[17px] rounded-full bg-white dark:bg-gray-900 border border-[#edf1f7] dark:border-gray-700 flex items-center justify-center">
                     <span className="text-[12px] font-semibold text-[#94a3b8]">
                       {sectors.length ? formatCompactPercent(sectors[0].percent, locale) : "0,0%"}
                     </span>
@@ -350,7 +364,7 @@ const DashboardPage = () => {
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span
-                              className="w-3.5 h-3.5 rounded-full shrink-0"
+                              className="w-2 h-2 rounded-[2px] shrink-0"
                               style={{ backgroundColor: SECTOR_COLORS[index % SECTOR_COLORS.length] }}
                             />
                             <span className="text-[13px] text-[#3a4560] dark:text-gray-300 font-medium truncate">
@@ -440,6 +454,11 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
+      <PremiumModal
+        open={premiumModalOpen}
+        positionCount={activePositions.length}
+        onClose={() => setPremiumModalOpen(false)}
+      />
     </div>
   );
 };

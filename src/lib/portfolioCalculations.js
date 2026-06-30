@@ -258,6 +258,32 @@ export const calculatePortfolioTotals = (generalData = {}, positions = [], rates
 
   const benchmarkDifference = portfolioReturnPercent - benchmarkReturn;
 
+  // ── DEBUG: per-currency breakdown — check browser DevTools > Console ──────
+  if (normalizedPositions.length > 0) {
+    const byCurrency = {};
+    normalizedPositions.forEach((p) => {
+      const cur = p.quoteCurrency || baseCurrency;
+      if (!byCurrency[cur]) byCurrency[cur] = { count: 0, origTotal: 0, convertedTotal: 0 };
+      byCurrency[cur].count++;
+      byCurrency[cur].origTotal += p.marketValueOriginal;
+      byCurrency[cur].convertedTotal += p.marketValue;
+    });
+    console.group(`[Portfolio] Desglose → ${baseCurrency}`);
+    Object.entries(byCurrency)
+      .sort((a, b) => b[1].convertedTotal - a[1].convertedTotal)
+      .forEach(([cur, d]) => {
+        console.log(
+          `${cur.padEnd(4)} (${d.count} pos):  ${d.origTotal.toFixed(2).padStart(12)} ${cur}  →  ${d.convertedTotal.toFixed(2).padStart(10)} ${baseCurrency}`
+        );
+      });
+    console.log(`${"─".repeat(55)}`);
+    console.log(`Posiciones:  ${positionsValueTotal.toFixed(2)} ${baseCurrency}`);
+    console.log(`Efectivo:    ${cash.toFixed(2)} ${baseCurrency}`);
+    console.log(`TOTAL:       ${portfolioValue.toFixed(2)} ${baseCurrency}`);
+    console.groupEnd();
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   return {
     baseCurrency,
     cash,
@@ -326,7 +352,7 @@ export const calculateInvestmentTypeDistribution = (
 
 export const calculateTopHoldings = (
   positions = [],
-  limit = 10,
+  limit = 30,
   baseCurrency = "EUR",
   rates
 ) => {
@@ -341,15 +367,39 @@ export const calculateTopHoldings = (
 
   if (!total) return [];
 
-  return normalizedPositions
-    .sort((a, b) => b.marketValue - a.marketValue)
-    .slice(0, limit)
-    .map((position) => ({
+  const sorted = [...normalizedPositions].sort((a, b) => b.marketValue - a.marketValue);
+
+  // All positions fit within the limit — no grouping needed
+  if (sorted.length <= limit) {
+    return sorted.map((position) => ({
       id: position.id,
       ticker: position.ticker,
       value: position.marketValue,
       weightPercent: (position.marketValue / total) * 100,
     }));
+  }
+
+  // More positions than the limit: show top (limit-1) + one "Otros" entry so the
+  // donut always fills 100% with labeled, colored segments instead of a gray gap.
+  const topN = sorted.slice(0, limit - 1);
+  const rest = sorted.slice(limit - 1);
+  const othersValue = rest.reduce((sum, p) => sum + p.marketValue, 0);
+
+  return [
+    ...topN.map((position) => ({
+      id: position.id,
+      ticker: position.ticker,
+      value: position.marketValue,
+      weightPercent: (position.marketValue / total) * 100,
+    })),
+    {
+      id: "otros",
+      ticker: "Otros",
+      value: othersValue,
+      weightPercent: (othersValue / total) * 100,
+      tickers: rest.map((p) => p.ticker),
+    },
+  ];
 };
 
 export const calculateDashboardData = (generalData = {}, positions = [], rates) => {
@@ -363,7 +413,7 @@ export const calculateDashboardData = (generalData = {}, positions = [], rates) 
       baseCurrency,
       rates
     ),
-    topHoldings: calculateTopHoldings(positions, 10, baseCurrency, rates),
+    topHoldings: calculateTopHoldings(positions, 30, baseCurrency, rates),
   };
 };
 

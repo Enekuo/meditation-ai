@@ -186,17 +186,17 @@ export default function FreeLayout() {
     <div className="min-h-screen bg-[#F7F9FC] dark:bg-gray-950 text-slate-900 dark:text-gray-100">
       {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 px-6">
           <div className="flex items-center">
             <Link
               to="/dashboard"
-              className="flex items-center gap-0 mr-8 -ml-16"
+              className="flex items-center gap-2"
               style={{ fontFamily: "'Quicksand', sans-serif" }}
             >
               <img
                 src="/logo-icon.png"
                 alt="Portfolio Controller logo"
-                className="w-16 h-16 object-contain shrink-0"
+                className="w-10 h-10 object-contain shrink-0"
               />
               <span className="text-xl font-bold text-slate-900 dark:text-gray-100 tracking-tight">
                 Portfolio Controller
@@ -217,10 +217,10 @@ export default function FreeLayout() {
       </header>
 
       {/* CUERPO */}
-      <div className="flex pt-16">
+      <div className="flex pt-20">
         {/* SIDEBAR */}
         <aside
-          className={`fixed left-0 top-16 bottom-0 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 flex flex-col justify-between transition-all duration-200 ${
+          className={`fixed left-0 top-20 bottom-0 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 flex flex-col justify-between transition-all duration-200 ${
             collapsed ? "w-16 px-2" : "w-48 px-4"
           }`}
         >
@@ -273,8 +273,8 @@ export default function FreeLayout() {
             collapsed ? "ml-16" : "ml-48"
           }`}
         >
-          <main className="min-h-[calc(100vh-64px)] border-l border-slate-200 dark:border-gray-700 flex flex-col">
-            <div className="flex-1 px-6 pt-0 pb-6">
+          <main className="min-h-[calc(100vh-80px)] border-l border-slate-200 dark:border-gray-700 flex flex-col">
+            <div className="flex-1 px-6 pt-5 pb-6">
               <Outlet />
             </div>
             <FooterDisclaimer />
