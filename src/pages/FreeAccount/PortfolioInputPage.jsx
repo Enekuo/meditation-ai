@@ -72,6 +72,7 @@ const emptyPositionForm = {
   quoteUnit: "NORMAL",
   sector: "",
   type: "",
+  assetType: "",
   shares: "",
   avgCost: "",
   annualDividend: "",
@@ -95,6 +96,7 @@ const sectorOptions = [
   "Otro",
 ];
 const typeOptions = ["Largo Plazo", "Dividendos", "Especulativa"];
+const assetTypeOptions = ["Acción", "ETF", "Fondo", "Cripto", "Otro"];
 
 const PortfolioInputPage = () => {
   const {
@@ -111,6 +113,7 @@ const PortfolioInputPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [generalSavedMessage, setGeneralSavedMessage] = useState("");
   const [formError, setFormError] = useState("");
+  const [formWarning, setFormWarning] = useState("");
   const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
   const [isAddPositionOpen, setIsAddPositionOpen] = useState(true);
@@ -170,6 +173,7 @@ const PortfolioInputPage = () => {
     setFormData({ ...emptyPositionForm, quoteCurrency: generalData.currency || "EUR" });
     setEditingId(null);
     setFormError("");
+    setFormWarning("");
   };
 
   const validatePositionForm = () => {
@@ -177,15 +181,12 @@ const PortfolioInputPage = () => {
       !formData.ticker.trim() ||
       !formData.price ||
       !formData.quoteCurrency ||
-      !formData.quoteUnit ||
-      !formData.sector ||
-      !formData.type ||
       !formData.shares ||
       !formData.avgCost ||
       !formData.annualDividend ||
       formData.realizedGain === ""
     ) {
-      return "Completa todos los campos de la posición antes de guardarla.";
+      return "Completa los campos obligatorios: Ticker, Precio, Moneda, Cantidad, Costo, Dividendo y Ganancia Realizada.";
     }
 
     if (
@@ -198,6 +199,15 @@ const PortfolioInputPage = () => {
     }
 
     return "";
+  };
+
+  const checkOptionalWarning = () => {
+    const missing = [];
+    if (!formData.assetType) missing.push("Tipo de Activo");
+    if (!formData.sector) missing.push("Sector");
+    if (!formData.type) missing.push("Tipo de Inversión");
+    if (missing.length === 0) return "";
+    return `Has dejado vacío: ${missing.join(", ")}. Esto repercutirá en los análisis del dashboard (filtros, gráficos de sector y tipo).`;
   };
 
 const buildPositionObject = () => {
@@ -222,6 +232,7 @@ const buildPositionObject = () => {
     quoteUnit: formData.quoteUnit,
     sector: formData.sector,
     type: formData.type,
+    assetType: formData.assetType,
     shares: parsedShares,
     avgCost: parsedAvgCost,
     annualDividend: parsedAnnualDividend,
@@ -244,8 +255,12 @@ const buildPositionObject = () => {
 
     if (validationError) {
       setFormError(validationError);
+      setFormWarning("");
       return;
     }
+
+    setFormError("");
+    const warning = checkOptionalWarning();
 
     const nextPosition = buildPositionObject();
 
@@ -259,7 +274,10 @@ const buildPositionObject = () => {
       persistPositions(updated);
     }
 
-    resetForm();
+    // Limpiar el form pero conservar el aviso visible para que el usuario lo vea
+    setFormData({ ...emptyPositionForm, quoteCurrency: generalData.currency || "EUR" });
+    setEditingId(null);
+    setFormWarning(warning);
   };
 
   const handleEditPosition = (position) => {
@@ -271,6 +289,7 @@ const buildPositionObject = () => {
       quoteUnit: position.quoteUnit || "NORMAL",
       sector: position.sector,
       type: position.type,
+      assetType: position.assetType || "",
       shares: String(position.shares),
       avgCost: String(position.avgCost),
       annualDividend: String(position.annualDividend),
@@ -425,6 +444,7 @@ const parseFlexibleNumber = (value) => {
         quoteUnit: "NORMAL",
         sector: "",
         type: "",
+        assetType: "",
         shares,
         avgCost,
         annualDividend: 0,
@@ -838,7 +858,7 @@ const parseFlexibleNumber = (value) => {
           </button>
 
           {isAddPositionOpen ? <div className="px-4 py-4">
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-3">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 mb-3">
               <div>
                 <label className={labelClass}>Ticker</label>
                 <input
@@ -880,22 +900,6 @@ const parseFlexibleNumber = (value) => {
               </div>
 
               <div>
-                <label className={labelClass}>&nbsp;</label>
-                <select
-                  name="quoteUnit"
-                  value={formData.quoteUnit}
-                  onChange={handlePositionChange}
-                  className={selectClass}
-                >
-                  {quoteUnitOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <label className={labelClass}>Sector</label>
                 <select
                   name="sector"
@@ -913,7 +917,24 @@ const parseFlexibleNumber = (value) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-3">
+            <div className="grid grid-cols-1 xl:grid-cols-6 gap-3 mb-3">
+              <div>
+                <label className={labelClass}>Tipo de Activo</label>
+                <select
+                  name="assetType"
+                  value={formData.assetType}
+                  onChange={handlePositionChange}
+                  className={selectClass}
+                >
+                  <option value="">Seleccionar</option>
+                  {assetTypeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className={labelClass}>Tipo de Inversión</label>
                 <select
@@ -932,7 +953,7 @@ const parseFlexibleNumber = (value) => {
               </div>
 
               <div>
-                <label className={labelClass}>Cantidad de Acciones</label>
+                <label className={labelClass}>Cantidad / Unidades</label>
                 <input
                   type="text"
                   name="shares"
@@ -1003,6 +1024,17 @@ const parseFlexibleNumber = (value) => {
                 {formError}
               </p>
             ) : null}
+
+            {formWarning && !formError ? (
+              <div className="mt-2 flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 px-3 py-2">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" className="text-amber-500 shrink-0 mt-0.5">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"/>
+                </svg>
+                <p className="text-[12px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                  {formWarning}
+                </p>
+              </div>
+            ) : null}
           </div> : null}
         </div>
 
@@ -1026,8 +1058,8 @@ const parseFlexibleNumber = (value) => {
                     <th className={thClass}>Precio Actual</th>
                     <th className={thClass}>Moneda</th>
                     <th className={thClass}>Sector</th>
-                    <th className={thClass}>Tipo</th>
-                    <th className={thClass}>Acciones</th>
+                    <th className={thClass}>Tipo Activo</th>
+                    <th className={thClass}>Unidades</th>
                     <th className={thClass}>Costo Prom.</th>
                     <th className={thClass}>Div. Anual</th>
                     <th className={thClass}>Gan. Realizada</th>
@@ -1056,7 +1088,7 @@ const parseFlexibleNumber = (value) => {
                         </td>
                         <td className={tdClass}>{position.quoteCurrency}</td>
                         <td className={tdClass}>{position.sector}</td>
-                        <td className={tdClass}>{position.type}</td>
+                        <td className={tdClass}>{position.assetType || "—"}</td>
                         <td className={tdClass}>{position.shares}</td>
                         <td className={tdClass}>
                           {formatMoney(position.avgCost, position.quoteCurrency)}

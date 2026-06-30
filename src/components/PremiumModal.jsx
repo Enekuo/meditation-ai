@@ -41,14 +41,14 @@ export default function PremiumModal({ open, positionCount, onClose }) {
 
         {/* Cuerpo */}
         <p className="text-[14px] text-[#51607f] dark:text-gray-400 leading-relaxed mb-2">
-          El límite de acciones en cartera es de 30. Actualmente tienes{" "}
+          El límite de posiciones en cartera es de 30. Actualmente tienes{" "}
           <span className="font-bold text-[#2f3a56] dark:text-gray-100">{positionCount}</span>{" "}
-          acciones.
+          posiciones.
         </p>
 
         {/* Subtítulo */}
         <p className="text-[13px] text-[#51607f] dark:text-gray-500 mb-5">
-          Hazte premium para tener un número ilimitado de acciones.
+          Hazte premium para tener un número ilimitado de posiciones.
         </p>
 
         {/* CTA principal — TODO: crear página /premium y reemplazar navigate("/ajustes") */}

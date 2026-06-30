@@ -219,7 +219,7 @@ const DashboardPage = () => {
               </div>
               <div className="mt-8 rounded-xl border border-[#e7edf7] dark:border-gray-700 bg-[#eef4ff] dark:bg-gray-800 px-4 py-2 text-center">
                 <p className="text-[12px] font-bold uppercase tracking-wide text-[#35405c] dark:text-gray-300">
-                  Cantidad De Acciones
+                  Total De Activos
                 </p>
                 <p className="text-[30px] leading-none mt-1 font-bold text-[#3471e6]">
                   {totals.positionsCount}
@@ -235,7 +235,7 @@ const DashboardPage = () => {
             fxRates={fxRates}
             size="small"
             showExpandButton={true}
-            title="ACCIONES"
+            title="DISTRIBUCIÓN DE ACTIVOS"
             onOtrosClick={() => setPremiumModalOpen(true)}
           />
 

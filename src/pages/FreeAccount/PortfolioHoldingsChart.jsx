@@ -17,6 +17,15 @@ const formatCompactPercent = (value, locale = "es-ES") => {
   return `${num.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 };
 
+const ASSET_TYPE_LABELS = {
+  "Acción": "Acciones",
+  "ETF": "ETFs",
+  "Fondo": "Fondos",
+  "Cripto": "Cripto",
+  "Otro": "Otros",
+  "__none__": "Sin clasificar",
+};
+
 // Genera un sparkline SVG determinista a partir del ticker
 function buildSparkline(ticker, positive, w = 120, h = 56) {
   const seed = ticker.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -39,7 +48,7 @@ export default function PortfolioHoldingsChart({
   fxRates = null,
   size = "small",
   showExpandButton = false,
-  title = "ACCIONES",
+  title = "DISTRIBUCIÓN DE ACTIVOS",
   onOtrosClick,
 }) {
   const navigate = useNavigate();
@@ -47,10 +56,34 @@ export default function PortfolioHoldingsChart({
   const locale = settings.numberLocale;
 
   const [holdingsView, setHoldingsView] = useState(settings.defaultChartView || "donut");
+  const [assetFilter, setAssetFilter] = useState("all");
+
+  // Tipos de activo presentes en la cartera (dinámico)
+  const availableAssetTypes = useMemo(() => {
+    const types = new Set();
+    let hasNone = false;
+    positions.forEach((p) => {
+      if (p.assetType) types.add(p.assetType);
+      else hasNone = true;
+    });
+    const sorted = [...types].sort((a, b) => {
+      const order = ["Acción", "ETF", "Fondo", "Cripto", "Otro"];
+      return (order.indexOf(a) ?? 99) - (order.indexOf(b) ?? 99);
+    });
+    if (hasNone && sorted.length > 0) sorted.push("__none__");
+    return sorted;
+  }, [positions]);
+
+  // Posiciones filtradas según el tipo de activo seleccionado
+  const filteredPositions = useMemo(() => {
+    if (assetFilter === "all") return positions;
+    if (assetFilter === "__none__") return positions.filter((p) => !p.assetType);
+    return positions.filter((p) => p.assetType === assetFilter);
+  }, [positions, assetFilter]);
 
   const topHoldings = useMemo(
-    () => calculateTopHoldings(positions, 30, currency, fxRates),
-    [positions, currency, fxRates]
+    () => calculateTopHoldings(filteredPositions, 30, currency, fxRates),
+    [filteredPositions, currency, fxRates]
   );
 
   // ── Modal de detalle de posición ─────────────────────────────────────────
@@ -93,7 +126,19 @@ export default function PortfolioHoldingsChart({
   }, [clickedPos]);
   // ─────────────────────────────────────────────────────────────────────────
 
-  const hasPositions = positions.length > 0;
+  const hasPositions = filteredPositions.length > 0;
+
+  const FILTER_TITLE_SUFFIX = {
+    "Acción":    "DE ACCIONES",
+    "ETF":       "DE ETFS",
+    "Fondo":     "DE FONDOS",
+    "Cripto":    "DE CRIPTO",
+    "Otro":      "DE OTROS",
+    "__none__":  "SIN CLASIFICAR",
+  };
+  const displayTitle = assetFilter === "all"
+    ? title
+    : `DISTRIBUCIÓN ${FILTER_TITLE_SUFFIX[assetFilter] || "DE ACTIVOS"}`;
   const isLarge = size === "large";
   const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
 
@@ -179,6 +224,13 @@ export default function PortfolioHoldingsChart({
         : "bg-white dark:bg-gray-800 border-[#d9e2f1] dark:border-gray-600 text-[#51607f] dark:text-gray-300 hover:bg-[#f6f9ff] dark:hover:bg-gray-700"
     }`;
 
+  const filterBtnClass = (active) =>
+    `h-7 px-3 rounded-lg text-[11px] font-semibold border transition-all whitespace-nowrap ${
+      active
+        ? "bg-[#2f6fed] border-[#2f6fed] text-white"
+        : "bg-white dark:bg-gray-800 border-[#d9e2f1] dark:border-gray-600 text-[#51607f] dark:text-gray-300 hover:bg-[#f6f9ff] dark:hover:bg-gray-700"
+    }`;
+
   return (
     <div className={wrapperClass}>
       <div className={`relative ${isLarge ? "min-h-[40px]" : "pt-1"}`}>
@@ -192,7 +244,7 @@ export default function PortfolioHoldingsChart({
           </button>
         ) : null}
 
-        <h3 className={titleClass}>{title}</h3>
+        <h3 className={titleClass}>{displayTitle}</h3>
 
         <div className="absolute right-0 top-0 flex items-center gap-2">
           <button type="button" onClick={() => setHoldingsView("donut")} className={buttonClass(holdingsView === "donut")}>
@@ -203,6 +255,29 @@ export default function PortfolioHoldingsChart({
           </button>
         </div>
       </div>
+
+      {/* ── Filtro por tipo de activo ── */}
+      {availableAssetTypes.length > 0 && (
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap justify-center">
+          <button
+            type="button"
+            onClick={() => setAssetFilter("all")}
+            className={filterBtnClass(assetFilter === "all")}
+          >
+            Todo
+          </button>
+          {availableAssetTypes.map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setAssetFilter(type)}
+              className={filterBtnClass(assetFilter === type)}
+            >
+              {ASSET_TYPE_LABELS[type] || type}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={`flex-1 flex flex-col items-center justify-center ${isLarge ? "py-4" : "py-3"}`}>
         {holdingsView === "donut" ? (
@@ -467,7 +542,7 @@ function PositionModal({ position: p, holding, color, locale, onClose }) {
               iconBg: gainIconBg,
             },
             {
-              label: "Acciones",
+              label: "Unidades",
               value: sharesStr,
               icon: <IconDocument/>,
               iconBg: "bg-orange-500/12 text-orange-500 dark:text-orange-400",

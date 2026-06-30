@@ -39,7 +39,7 @@ export default function PortfolioPositions() {
         currency={generalData.currency}
         fxRates={fxRates}
         size="large"
-        title="ACCIONES"
+        title="DISTRIBUCIÓN DE ACTIVOS"
         onOtrosClick={() => setPremiumModalOpen(true)}
       />
 

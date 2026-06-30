@@ -193,7 +193,7 @@ export default function AjustesPage() {
           <div className="flex items-center justify-between gap-4 px-5 py-3">
             <div>
               <p className="text-[13px] font-medium text-[#2f3a56] dark:text-gray-100">
-                Vista por defecto del gráfico de acciones
+                Vista por defecto del gráfico de activos
               </p>
               <p className="text-[11px] text-slate-400 dark:text-gray-500 mt-0.5">
                 Se aplica al abrir el Dashboard o la página de posiciones.
