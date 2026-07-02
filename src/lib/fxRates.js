@@ -56,7 +56,7 @@ export async function getOrFetchFxRates() {
     localStorage.setItem(CACHE_DATE_KEY, today);
     return rates;
   } catch (err) {
-    console.warn('[fxRates] API fetch failed, using stale/fallback rates:', err.message);
+    console.error('[fxRates] API fetch failed, using stale/fallback rates:', err.message);
     try {
       const stale = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
       if (stale && typeof stale.USD === 'number') return stale;
@@ -85,12 +85,10 @@ export const convertirADivisaBase = (amount, fromCurrency, toCurrency, rates) =>
   const ratesMap = (rates && typeof rates.USD === 'number') ? rates : FALLBACK_RATES_TO_USD;
 
   const fromRate = ratesMap[from] !== undefined ? ratesMap[from]
-    : (FALLBACK_RATES_TO_USD[from] !== undefined ? FALLBACK_RATES_TO_USD[from]
-      : (console.warn(`[fxRates] Unknown currency "${from}" — treating as 1:1 USD`), 1));
+    : (FALLBACK_RATES_TO_USD[from] !== undefined ? FALLBACK_RATES_TO_USD[from] : 1);
 
   const toRate = ratesMap[to] !== undefined ? ratesMap[to]
-    : (FALLBACK_RATES_TO_USD[to] !== undefined ? FALLBACK_RATES_TO_USD[to]
-      : (console.warn(`[fxRates] Unknown currency "${to}" — treating as 1:1 USD`), 1));
+    : (FALLBACK_RATES_TO_USD[to] !== undefined ? FALLBACK_RATES_TO_USD[to] : 1);
 
   return (num * fromRate) / toRate;
 };

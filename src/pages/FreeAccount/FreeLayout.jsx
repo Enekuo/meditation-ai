@@ -5,6 +5,7 @@ import {
   Settings,
   Globe,
   ChevronDown,
+  ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Pencil,
@@ -12,6 +13,8 @@ import {
   Moon,
   Monitor,
   LogOut,
+  TrendingUp,
+  BarChart2,
 } from "lucide-react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n";
@@ -154,8 +157,17 @@ export default function FreeLayout() {
 
   const [collapsed, setCollapsed] = useState(false);
 
+  const isDashboardArea = pathname.startsWith("/dashboard");
+  const [dashboardOpen, setDashboardOpen] = useState(isDashboardArea);
+
+  // Auto-expand submenu when entering a dashboard route
+  useEffect(() => {
+    if (isDashboardArea) setDashboardOpen(true);
+  }, [isDashboardArea]);
+
   const showText = !collapsed;
-  const isDashboard = pathname === "/dashboard";
+  const isDashboardGeneral = pathname === "/dashboard" || pathname === "/dashboard/general";
+  const isDashboardAcciones = pathname === "/dashboard/acciones";
   const isPortfolioInput = pathname === "/portfolio-input";
   const isAyuda = pathname === "/ayuda";
   const isAjustes = pathname === "/ajustes";
@@ -196,7 +208,7 @@ export default function FreeLayout() {
               <img
                 src="/logo-icon.png"
                 alt="Portfolio Controller logo"
-                className="w-10 h-10 object-contain shrink-0"
+                className="w-18 h-14 object-contain shrink-0"
               />
               <span className="text-xl font-bold text-slate-900 dark:text-gray-100 tracking-tight">
                 Portfolio Controller
@@ -225,11 +237,60 @@ export default function FreeLayout() {
           }`}
         >
           <div className="flex-1 flex flex-col">
-            <nav className="space-y-2 text-sm mt-4">
-              <Link to="/dashboard" className={navLinkClass(isDashboard)}>
-                <LayoutDashboard size={18} />
-                {showText && <span>Dashboard</span>}
-              </Link>
+            <nav className="space-y-1 text-sm mt-4">
+              {/* Dashboard parent + sub-items */}
+              {collapsed ? (
+                <Link to="/dashboard/general" className={navLinkClass(isDashboardArea)}>
+                  <LayoutDashboard size={18} />
+                </Link>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setDashboardOpen(v => !v)}
+                    className={`w-full flex items-center gap-2 px-3 h-11 rounded-lg transition-colors ${
+                      isDashboardArea
+                        ? "bg-slate-900 dark:bg-blue-600 text-white font-medium"
+                        : "hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-700 dark:text-gray-300"
+                    }`}
+                  >
+                    <LayoutDashboard size={18} className="shrink-0" />
+                    <span className="flex-1 text-left">Dashboard</span>
+                    {dashboardOpen
+                      ? <ChevronDown size={14} className="shrink-0 opacity-70" />
+                      : <ChevronRight size={14} className="shrink-0 opacity-70" />
+                    }
+                  </button>
+
+                  {dashboardOpen && (
+                    <div className="ml-4 pl-3 border-l border-slate-200 dark:border-gray-700 space-y-0.5">
+                      <Link
+                        to="/dashboard/general"
+                        className={`flex items-center gap-2 px-3 h-9 rounded-lg transition-colors text-[13px] ${
+                          isDashboardGeneral
+                            ? "bg-slate-100 dark:bg-gray-800 text-[#2f6fed] dark:text-blue-400 font-semibold"
+                            : "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        <BarChart2 size={14} className="shrink-0" />
+                        General
+                      </Link>
+                      <Link
+                        to="/dashboard/acciones"
+                        className={`flex items-center gap-2 px-3 h-9 rounded-lg transition-colors text-[13px] ${
+                          isDashboardAcciones
+                            ? "bg-slate-100 dark:bg-gray-800 text-[#2f6fed] dark:text-blue-400 font-semibold"
+                            : "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        <TrendingUp size={14} className="shrink-0" />
+                        Acciones
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+
               <Link to="/portfolio-input" className={navLinkClass(isPortfolioInput)}>
                 <Pencil size={18} />
                 {showText && <span>Edit Portfolio</span>}

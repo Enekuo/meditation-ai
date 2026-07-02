@@ -10,6 +10,7 @@ import CreatorsPage from '@/pages/CreatorsPage';
 import AuthPage from '@/pages/AuthPage';
 import SupportPage from '@/pages/SupportPage';
 import DashboardPage from '@/pages/FreeAccount/DashboardPage';
+import DashboardAccionesPage from '@/pages/FreeAccount/DashboardAccionesPage';
 import FreeLayout from '@/pages/FreeAccount/FreeLayout';
 import PortfolioInputPage from '@/pages/FreeAccount/PortfolioInputPage';
 import PortfolioPositions from "@/pages/FreeAccount/PortfolioPositions";
@@ -18,7 +19,7 @@ import AjustesPage from "@/pages/FreeAccount/AjustesPage";
 import GuestMigrationModal from "@/components/GuestMigrationModal";
 
 // Routes that use FreeLayout (own header/sidebar) — public Header must not render there
-const FREE_ACCOUNT_PATHS = [
+const FREE_ACCOUNT_PREFIXES = [
     '/dashboard',
     '/portfolio-input',
     '/portfoliopositions',
@@ -30,7 +31,9 @@ function App() {
     const location = useLocation();
     const showHeader =
         location.pathname !== '/iniciar-sesion' &&
-        !FREE_ACCOUNT_PATHS.some((p) => location.pathname === p);
+        !FREE_ACCOUNT_PREFIXES.some((p) =>
+            location.pathname === p || location.pathname.startsWith(p + '/')
+        );
 
     return (
         <>
@@ -61,6 +64,8 @@ function App() {
 
                         <Route element={<FreeLayout />}>
                             <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/dashboard/general" element={<DashboardPage />} />
+                            <Route path="/dashboard/acciones" element={<DashboardAccionesPage />} />
                             <Route path="/portfolio-input" element={<PortfolioInputPage />} />
                             <Route path="/portfoliopositions" element={<PortfolioPositions />} />
                             <Route path="/ayuda" element={<AyudaPage />} />

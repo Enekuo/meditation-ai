@@ -74,3 +74,31 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
+
+/* Thin scrollbar utility — for scoped scrollable panels (e.g. custom dropdowns) */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark .scrollbar-thin {
+  scrollbar-color: #374151 transparent;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}

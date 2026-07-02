@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { usePortfolioData } from "@/contexts/PortfolioDataProvider";
 
 const baseCurrencyOptions = [
@@ -79,7 +80,63 @@ const emptyPositionForm = {
   realizedGain: "",
 };
 
-const benchmarkOptions = ["S&P500", "Nasdaq 100", "MSCI World", "IBEX 35"];
+const benchmarkGroups = [
+  {
+    label: "Índices Globales",
+    options: [
+      "S&P500",
+      "Nasdaq 100",
+      "MSCI World",
+      "IBEX 35",
+      "DAX 40",
+      "FTSE 100",
+      "CAC 40",
+      "Nikkei 225",
+      "Hang Seng",
+      "ASX 200",
+      "Euro Stoxx 50",
+      "MSCI Emerging Markets",
+      "MSCI Europe",
+      "MSCI All Country World (ACWI)",
+    ],
+  },
+  {
+    label: "Renta Fija",
+    options: ["US 10Y Treasury Bond", "Bloomberg Global Aggregate Bond"],
+  },
+  {
+    label: "Cripto",
+    options: ["Bitcoin (BTC)", "Ethereum (ETH)"],
+  },
+  {
+    label: "Commodities",
+    options: ["Gold (Oro)", "Oil WTI (Petróleo)"],
+  },
+];
+
+// Retorno histórico anual promedio aproximado por benchmark (referencia editable)
+const BENCHMARK_RETURNS = {
+  "S&P500": "10.0",
+  "Nasdaq 100": "13.0",
+  "MSCI World": "8.0",
+  "IBEX 35": "6.0",
+  "DAX 40": "8.5",
+  "FTSE 100": "7.0",
+  "CAC 40": "7.5",
+  "Nikkei 225": "8.0",
+  "Hang Seng": "6.0",
+  "ASX 200": "8.0",
+  "Euro Stoxx 50": "7.5",
+  "MSCI Emerging Markets": "7.0",
+  "MSCI Europe": "7.0",
+  "MSCI All Country World (ACWI)": "9.0",
+  "US 10Y Treasury Bond": "3.5",
+  "Bloomberg Global Aggregate Bond": "3.0",
+  "Bitcoin (BTC)": "50.0",
+  "Ethereum (ETH)": "40.0",
+  "Gold (Oro)": "5.0",
+  "Oil WTI (Petróleo)": "3.0",
+};
 const sectorOptions = [
   "Tecnología",
   "Salud",
@@ -97,6 +154,121 @@ const sectorOptions = [
 ];
 const typeOptions = ["Largo Plazo", "Dividendos", "Especulativa"];
 const assetTypeOptions = ["Acción", "ETF", "Fondo", "Cripto", "Otro"];
+
+// ─── Selector personalizado de Benchmark (agrupado por categoría) ─────────
+// Renderizado vía portal en document.body para no quedar recortado por el
+// overflow-hidden de la tarjeta contenedora, y poder ser más ancho que el trigger.
+function BenchmarkSelect({ value, onChange, groups, className }) {
+  const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const computeCoords = () => {
+    const rect = triggerRef.current.getBoundingClientRect();
+    const desiredWidth = Math.max(rect.width * 2, 480);
+    const width = Math.min(desiredWidth, window.innerWidth - 32);
+    let left = rect.left + window.scrollX;
+    const maxLeft = window.scrollX + window.innerWidth - width - 16;
+    if (left > maxLeft) left = Math.max(maxLeft, window.scrollX + 16);
+    setCoords({ top: rect.bottom + window.scrollY + 6, left, width });
+  };
+
+  const handleToggle = () => {
+    if (!open) computeCoords();
+    setOpen((v) => !v);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      const insideTrigger = triggerRef.current && triggerRef.current.contains(e.target);
+      const insidePanel = panelRef.current && panelRef.current.contains(e.target);
+      if (!insideTrigger && !insidePanel) setOpen(false);
+    };
+    const handleResize = () => computeCoords();
+    document.addEventListener("mousedown", handleClick);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [open]);
+
+  const handleSelect = (option) => {
+    onChange(option);
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleToggle}
+        className={`${className} flex items-center justify-between gap-2`}
+      >
+        <span className="truncate">{value || "Selecciona..."}</span>
+        <svg
+          viewBox="0 0 20 20"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`shrink-0 text-slate-400 dark:text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M5 7.5l5 5 5-5" />
+        </svg>
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={panelRef}
+            style={{ position: "absolute", top: coords.top, left: coords.left, width: coords.width }}
+            className="z-[9999] max-h-[480px] overflow-y-auto scrollbar-thin rounded-2xl border border-[#d9e2f1] dark:border-gray-600 bg-white dark:bg-gray-800 shadow-2xl py-2"
+          >
+            {groups.map((group, gIndex) => (
+              <div
+                key={group.label}
+                className={gIndex > 0 ? "mt-1 pt-2 border-t border-[#edf1f7] dark:border-gray-700" : ""}
+              >
+                <p className="px-4 pt-2 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500 bg-slate-50/80 dark:bg-gray-900/30 select-none cursor-default">
+                  {group.label}
+                </p>
+                {group.options.map((option) => {
+                  const active = option === value;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => handleSelect(option)}
+                      className={`w-full text-left px-4 py-3 text-[15px] flex items-center justify-between gap-3 transition-colors ${
+                        active
+                          ? "bg-[#dce9ff] dark:bg-blue-900/50 text-[#2f6fed] dark:text-blue-300 font-semibold shadow-[inset_3px_0_0_0_#2f6fed]"
+                          : "text-[#24375d] dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700/70"
+                      }`}
+                    >
+                      <span className="truncate">{option}</span>
+                      {active && (
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" className="shrink-0">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
 
 const PortfolioInputPage = () => {
   const {
@@ -116,7 +288,7 @@ const PortfolioInputPage = () => {
   const [formWarning, setFormWarning] = useState("");
   const [isGeneralSectionOpen, setIsGeneralSectionOpen] = useState(true);
   const [isImportSectionOpen, setIsImportSectionOpen] = useState(false);
-  const [isAddPositionOpen, setIsAddPositionOpen] = useState(true);
+  const [isAddPositionOpen, setIsAddPositionOpen] = useState(false);
   const [importMessage, setImportMessage] = useState("");
   const [importError, setImportError] = useState("");
   const [initDone, setInitDone] = useState(false);
@@ -153,8 +325,17 @@ const PortfolioInputPage = () => {
     }));
   };
 
+  const handleBenchmarkSelect = (option) => {
+    setGeneralData((prev) => ({
+      ...prev,
+      benchmark: option,
+      benchmarkReturn: BENCHMARK_RETURNS[option] ?? prev.benchmarkReturn,
+    }));
+  };
+
   const handleSaveGeneralData = () => {
     ctxSaveGeneralData(generalData);
+    setIsGeneralSectionOpen(false);
     setGeneralSavedMessage("Datos generales guardados correctamente.");
     setTimeout(() => {
       setGeneralSavedMessage("");
@@ -296,6 +477,8 @@ const buildPositionObject = () => {
       realizedGain: String(position.realizedGain),
     });
     setFormError("");
+    setIsAddPositionOpen(true);
+    setIsGeneralSectionOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -585,7 +768,7 @@ const parseFlexibleNumber = (value) => {
                   </div>
                   <div>
                     <h3 className="text-[16px] font-bold text-[#1e3a5f] dark:text-gray-100 leading-snug mb-1.5">
-                      Función disponible solo en{" "}
+                      Función disponible en{" "}
                       <span className="text-[#2563eb]">Plan Premium</span>
                     </h3>
                     <p className="text-[13px] text-[#4b5563] dark:text-gray-400 leading-relaxed mb-4 max-w-sm">
@@ -752,18 +935,12 @@ const parseFlexibleNumber = (value) => {
 
                 <div>
                   <label className={labelClass}>Benchmark</label>
-                  <select
-                    name="benchmark"
+                  <BenchmarkSelect
                     value={generalData.benchmark}
-                    onChange={handleGeneralChange}
+                    onChange={handleBenchmarkSelect}
+                    groups={benchmarkGroups}
                     className={selectLgClass}
-                  >
-                    {benchmarkOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div>

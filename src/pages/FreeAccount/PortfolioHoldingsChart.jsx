@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
-import { useNavigate } from "react-router-dom";
 import { calculateTopHoldings } from "@/lib/portfolioCalculations";
 import { useSettings } from "@/contexts/SettingsProvider";
 
@@ -50,13 +49,25 @@ export default function PortfolioHoldingsChart({
   showExpandButton = false,
   title = "DISTRIBUCIÓN DE ACTIVOS",
   onOtrosClick,
+  hideAssetFilter = false,
+  onExpandClick,
+  flat = false,
 }) {
-  const navigate = useNavigate();
   const { settings } = useSettings();
   const locale = settings.numberLocale;
 
   const [holdingsView, setHoldingsView] = useState(settings.defaultChartView || "donut");
   const [assetFilter, setAssetFilter] = useState("all");
+  const [barsReady, setBarsReady] = useState(false);
+
+  useEffect(() => {
+    if (holdingsView === "bars") {
+      const id = requestAnimationFrame(() => requestAnimationFrame(() => setBarsReady(true)));
+      return () => cancelAnimationFrame(id);
+    } else {
+      setBarsReady(false);
+    }
+  }, [holdingsView]);
 
   // Tipos de activo presentes en la cartera (dinámico)
   const availableAssetTypes = useMemo(() => {
@@ -209,19 +220,21 @@ export default function PortfolioHoldingsChart({
     };
   }, [topHoldings, isLarge, isDark, locale]);
 
-  const wrapperClass = isLarge
-    ? "bg-white dark:bg-gray-900 border border-[#e7ebf3] dark:border-gray-700 rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-6 py-5 min-h-[560px] flex flex-col"
-    : "bg-white dark:bg-gray-900 border border-[#e7ebf3] dark:border-gray-700 rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col";
+  const wrapperClass = flat
+    ? "flex flex-col min-h-[560px]"
+    : isLarge
+      ? "bg-white dark:bg-gray-900 border border-[#e7ebf3] dark:border-gray-700 rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-6 py-5 min-h-[560px] flex flex-col"
+      : "bg-white dark:bg-gray-900 border border-[#e7ebf3] dark:border-gray-700 rounded-[18px] shadow-[0_4px_16px_rgba(31,41,55,0.04)] px-4 py-3 flex flex-col";
 
   const titleClass = isLarge
     ? "text-center text-[20px] font-bold text-[#2f3a56] dark:text-gray-100 pt-1"
     : "text-center text-[16px] font-bold text-[#2f3a56] dark:text-gray-100";
 
   const buttonClass = (active) =>
-    `${isLarge ? "h-9 px-4 rounded-xl text-[13px]" : "h-8 px-3 rounded-lg text-[12px]"} font-semibold border transition-all ${
+    `flex items-center gap-2 px-3 h-9 rounded-lg text-[13px] transition-colors whitespace-nowrap ${
       active
-        ? "bg-[#2f6fed] border-[#2f6fed] text-white"
-        : "bg-white dark:bg-gray-800 border-[#d9e2f1] dark:border-gray-600 text-[#51607f] dark:text-gray-300 hover:bg-[#f6f9ff] dark:hover:bg-gray-700"
+        ? "bg-slate-100 dark:bg-gray-800 text-[#2f6fed] dark:text-blue-400 font-semibold"
+        : "text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700/60 hover:text-slate-700 dark:hover:text-gray-200"
     }`;
 
   const filterBtnClass = (active) =>
@@ -233,31 +246,46 @@ export default function PortfolioHoldingsChart({
 
   return (
     <div className={wrapperClass}>
-      <div className={`relative ${isLarge ? "min-h-[40px]" : "pt-1"}`}>
-        {showExpandButton && !isLarge ? (
-          <button
-            type="button"
-            onClick={() => navigate("/portfoliopositions")}
-            className="absolute left-0 top-0 h-8 px-3 rounded-lg border border-[#d9e2f1] dark:border-gray-600 bg-white dark:bg-gray-800 text-[12px] font-semibold text-[#51607f] dark:text-gray-300 hover:bg-[#f6f9ff] dark:hover:bg-gray-700 transition-all"
-          >
-            Agrandar
-          </button>
-        ) : null}
-
-        <h3 className={titleClass}>{displayTitle}</h3>
-
-        <div className="absolute right-0 top-0 flex items-center gap-2">
+      <div className={`relative flex items-start ${isLarge ? "min-h-[40px]" : "pt-0"}`}>
+        {/* Donut / Barras — izquierda, apilados verticalmente */}
+        <div className="flex flex-col gap-0.5">
           <button type="button" onClick={() => setHoldingsView("donut")} className={buttonClass(holdingsView === "donut")}>
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" className="shrink-0">
+              <path d="M7.25 1.06A7 7 0 1 0 14.94 8.75H7.25V1.06Z"/>
+              <path d="M8.75 1.06v6.19h6.19A7.01 7.01 0 0 0 8.75 1.06Z"/>
+            </svg>
             Donut
           </button>
           <button type="button" onClick={() => setHoldingsView("bars")} className={buttonClass(holdingsView === "bars")}>
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" className="shrink-0">
+              <rect x="1" y="8" width="3" height="7" rx="0.75"/>
+              <rect x="6" y="4" width="3" height="11" rx="0.75"/>
+              <rect x="11" y="1" width="3" height="14" rx="0.75"/>
+            </svg>
             Barras
           </button>
         </div>
+
+        {/* Título — centrado horizontalmente, centrado en la altura del grupo de botones */}
+        <h3 className={`${titleClass} absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2`}>{displayTitle}</h3>
+
+        {/* Agrandar — derecha, alineado arriba */}
+        {showExpandButton && !isLarge && onExpandClick ? (
+          <button
+            type="button"
+            onClick={onExpandClick}
+            className="ml-auto h-9 px-3 rounded-lg text-[13px] font-medium text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-700/60 hover:text-slate-700 dark:hover:text-gray-200 transition-colors flex items-center gap-1.5"
+          >
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d="M10 2h4v4M14 2l-5 5M6 14H2v-4M2 14l5-5"/>
+            </svg>
+
+          </button>
+        ) : null}
       </div>
 
       {/* ── Filtro por tipo de activo ── */}
-      {availableAssetTypes.length > 0 && (
+      {!hideAssetFilter && availableAssetTypes.length > 0 && (
         <div className="flex items-center gap-1.5 mt-2 flex-wrap justify-center">
           <button
             type="button"
@@ -301,32 +329,36 @@ export default function PortfolioHoldingsChart({
           )
         ) : hasPositions ? (
           <div className={`w-full px-4 py-2 ${isLarge ? "max-w-[1100px]" : "max-w-[560px]"}`}>
-            <div className={isLarge ? "space-y-5" : "overflow-y-auto max-h-[300px] space-y-4 pr-1"}>
-              {topHoldings.map((item, index) => (
+            <div className={isLarge ? "space-y-5" : "space-y-4"}>
+              {topHoldings.map((item, index) => {
+                const pct = Math.max(Number(item.weightPercent || 0), 0);
+                return (
                 <div
                   key={item.id || item.ticker}
-                  className={`grid items-center ${isLarge ? "grid-cols-[220px_1fr_84px] gap-5" : "grid-cols-[170px_1fr_64px] gap-4"}`}
+                  className={`group grid items-center cursor-pointer rounded-lg px-2 -mx-2 transition-colors duration-150 hover:bg-[#eef4ff] dark:hover:bg-gray-700/40 ${isLarge ? "grid-cols-[220px_1fr_84px] gap-5 py-1" : "grid-cols-[170px_1fr_64px] gap-4"}`}
                 >
-                  <div className={`font-medium text-[#3a4560] dark:text-gray-300 truncate ${isLarge ? "text-[15px]" : "text-[13px]"}`}>
+                  <div className={`font-medium truncate transition-colors duration-150 group-hover:text-[#2f6fed] dark:group-hover:text-blue-400 ${isLarge ? "text-[15px] text-[#3a4560] dark:text-gray-300" : "text-[13px] text-[#3a4560] dark:text-gray-300"}`}>
                     {item.ticker}
                   </div>
-                  <div className={`overflow-hidden border border-[#edf1f7] dark:border-gray-700 bg-[#f1f4f9] dark:bg-gray-800 ${isLarge ? "h-[34px] rounded-lg" : "h-[24px] rounded-md"}`}>
+                  <div className={`overflow-hidden border border-[#edf1f7] dark:border-gray-700 bg-[#f1f4f9] dark:bg-gray-800 transition-all duration-150 group-hover:border-[#c5d8ff] dark:group-hover:border-gray-600 ${isLarge ? "h-[34px] rounded-lg" : "h-[24px] rounded-md"}`}>
                     <div
-                      className={`h-full flex items-center justify-end text-white font-bold ${isLarge ? "pr-3 text-[13px] rounded-lg" : "pr-2 text-[12px] rounded-md"}`}
+                      className={`h-full flex items-center justify-end text-white font-bold group-hover:brightness-110 ${isLarge ? "pr-3 text-[13px] rounded-lg" : "pr-2 text-[12px] rounded-md"}`}
                       style={{
-                        width: `${Math.max(Number(item.weightPercent || 0), 0)}%`,
+                        width: barsReady ? `${pct}%` : "0%",
                         backgroundColor: HOLDING_COLORS[index % HOLDING_COLORS.length],
-                        minWidth: Number(item.weightPercent || 0) > 0 ? (isLarge ? "52px" : "42px") : "0px",
+                        minWidth: barsReady && pct > 0 ? (isLarge ? "52px" : "42px") : "0px",
+                        transition: `width 0.55s cubic-bezier(0.4,0,0.2,1) ${index * 55}ms, min-width 0.55s cubic-bezier(0.4,0,0.2,1) ${index * 55}ms`,
                       }}
                     >
-                      {Number(item.weightPercent || 0) > 0 ? formatCompactPercent(item.weightPercent, locale) : ""}
+                      {barsReady && pct > 0 ? formatCompactPercent(item.weightPercent, locale) : ""}
                     </div>
                   </div>
-                  <div className={`text-right font-semibold text-[#2f3a56] dark:text-gray-100 ${isLarge ? "text-[15px]" : "text-[13px]"}`}>
+                  <div className={`text-right font-semibold transition-colors duration-150 group-hover:text-[#2f6fed] dark:group-hover:text-blue-400 ${isLarge ? "text-[15px] text-[#2f3a56] dark:text-gray-100" : "text-[13px] text-[#2f3a56] dark:text-gray-100"}`}>
                     {formatCompactPercent(item.weightPercent, locale)}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : (

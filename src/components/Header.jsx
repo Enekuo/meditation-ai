@@ -133,7 +133,7 @@ const Header = () => {
                         <img
                             src="/logo-icon.png"
                             alt="Portfolio Controller logo"
-                            className="w-16 h-12 object-contain shrink-0"
+                            className="w-18 h-14 object-contain shrink-0"
                         />
                         <span className="text-[16px] font-bold text-slate-900 dark:text-white tracking-tight uppercase leading-none -mt-2">
                             Portfolio Controller
@@ -251,7 +251,8 @@ const Header = () => {
                                 <img
                                     src="/logo-icon.png"
                                     alt="Portfolio Controller logo"
-                                    className="w-10 h-10 object-contain shrink-0"
+                                    className="w-10 h-10
+                                     object-contain shrink-0"
                                 />
                                 <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                                     Portfolio Controller

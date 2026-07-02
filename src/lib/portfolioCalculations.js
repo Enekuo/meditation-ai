@@ -258,31 +258,6 @@ export const calculatePortfolioTotals = (generalData = {}, positions = [], rates
 
   const benchmarkDifference = portfolioReturnPercent - benchmarkReturn;
 
-  // ── DEBUG: per-currency breakdown — check browser DevTools > Console ──────
-  if (normalizedPositions.length > 0) {
-    const byCurrency = {};
-    normalizedPositions.forEach((p) => {
-      const cur = p.quoteCurrency || baseCurrency;
-      if (!byCurrency[cur]) byCurrency[cur] = { count: 0, origTotal: 0, convertedTotal: 0 };
-      byCurrency[cur].count++;
-      byCurrency[cur].origTotal += p.marketValueOriginal;
-      byCurrency[cur].convertedTotal += p.marketValue;
-    });
-    console.group(`[Portfolio] Desglose → ${baseCurrency}`);
-    Object.entries(byCurrency)
-      .sort((a, b) => b[1].convertedTotal - a[1].convertedTotal)
-      .forEach(([cur, d]) => {
-        console.log(
-          `${cur.padEnd(4)} (${d.count} pos):  ${d.origTotal.toFixed(2).padStart(12)} ${cur}  →  ${d.convertedTotal.toFixed(2).padStart(10)} ${baseCurrency}`
-        );
-      });
-    console.log(`${"─".repeat(55)}`);
-    console.log(`Posiciones:  ${positionsValueTotal.toFixed(2)} ${baseCurrency}`);
-    console.log(`Efectivo:    ${cash.toFixed(2)} ${baseCurrency}`);
-    console.log(`TOTAL:       ${portfolioValue.toFixed(2)} ${baseCurrency}`);
-    console.groupEnd();
-  }
-  // ─────────────────────────────────────────────────────────────────────────
 
   return {
     baseCurrency,
